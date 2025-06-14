@@ -1,0 +1,41 @@
+package test0905;
+
+import org.openqa.selenium.By;
+import org.openqa.selenium.WebDriver;
+import org.openqa.selenium.WebElement;
+import org.openqa.selenium.chrome.ChromeDriver;
+import io.github.bonigarcia.wdm.WebDriverManager;
+
+public class FirstTestCase {
+	//Launch browser 
+	//Launch Login page
+	//Perform Login
+
+	public static void main(String[] args) throws Exception {
+		// Method 1
+//		System.setProperty("webdriver.chrome.driver", "C:\\Jar\\chromedriver-win64\\chromedriver.exe");
+//		WebDriver driver = new ChromeDriver();
+//		driver.get("https://www.skillmuni.in/Skillmuni_Prod/login");
+//		driver.manage().window().maximize();
+//		Thread.sleep(3000);
+//		driver.close();
+		// Method-2
+		WebDriverManager.chromedriver().setup();
+		WebDriver driver = new ChromeDriver();
+		driver.get("https://www.skillmuni.in/Skillmuni_Prod/login");
+		System.out.println("Title of the page is =>"+driver.getTitle());
+		System.out.println("Url of the page is =>"+driver.getCurrentUrl());
+		Thread.sleep(3000);
+		driver.manage().window().maximize();
+		Thread.sleep(3000);
+		WebElement userId=driver.findElement(By.xpath("//input[@id='userId']"));
+		userId.clear();
+		userId.sendKeys("healthApp");
+		WebElement password=driver.findElement(By.xpath("//input[@id='password']"));
+		password.clear();
+		password.sendKeys("healthApp");
+//		driver.close();
+
+	}
+
+}

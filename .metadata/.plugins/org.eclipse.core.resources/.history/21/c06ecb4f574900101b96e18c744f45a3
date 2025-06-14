@@ -1,0 +1,70 @@
+package test0905;
+
+import java.util.List;
+
+import org.openqa.selenium.By;
+import org.openqa.selenium.WebDriver;
+import org.openqa.selenium.WebElement;
+import org.openqa.selenium.chrome.ChromeDriver;
+import org.openqa.selenium.chrome.ChromeOptions;
+
+import io.github.bonigarcia.wdm.WebDriverManager;
+
+
+public class SecondTestCase throws Exception {
+
+	public static void main(String[] args) {
+		
+//		 VerifyTopicCards 
+
+
+		    	WebDriverManager.chromedriver().setup();
+				// Create ChromeOptions to disable password manager
+				ChromeOptions options = new ChromeOptions();
+
+				// Optional: Run in incognito to prevent password manager from saving
+				options.addArguments("--incognito");
+
+				// Launch browser
+				WebDriver driver = new ChromeDriver(options);
+				driver.get("https://www.skillmuni.in/Skillmuni_Prod/login");
+				System.out.println("Title of the page is =>" + driver.getTitle());
+				System.out.println("Url of the page is =>" + driver.getCurrentUrl());
+				Thread.sleep(3000);
+				driver.manage().window().maximize();
+
+				// Login
+				Thread.sleep(1000);
+				WebElement userId = driver.findElement(By.xpath("//input[@id='userId']"));
+				userId.clear();
+				userId.sendKeys("healthApp");
+				WebElement password = driver.findElement(By.xpath("//input[@id='password']"));
+				password.clear();
+				password.sendKeys("healthApp");
+				driver.findElement(By.xpath("//button[@class='login-btn']")).click();
+				Thread.sleep(3000);
+
+				// Click "See All" for Knowledge Knook
+				WebElement knowledgeSeeAll = driver.findElement(By.xpath("//a[@href='/Skillmuni_Prod/learning-zone']"));
+				knowledgeSeeAll.click();
+				System.out.println("Clicked Knowledge Knook -> See All");
+
+		        // Wait for page to load fully
+		        Thread.sleep(5000);
+
+		        // Find all topic cards
+		        List<WebElement> cards = driver.findElements(By.xpath("//div[contains(@class,'play-card')]"));
+		        System.out.println("📚 Total topic cards found: " + cards.size());
+
+		        // Print alt text or any relevant data (like headings)
+		        for (int i = 0; i < cards.size(); i++) {
+		            WebElement card = cards.get(i);
+		            String cardText = card.getText().trim();
+		            System.out.println("▶️ Card " + (i + 1) + ": " + cardText);
+		        }
+
+		        driver.quit();
+		    }
+	
+	}
+

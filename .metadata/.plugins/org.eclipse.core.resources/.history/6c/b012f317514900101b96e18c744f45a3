@@ -1,0 +1,73 @@
+package test0905;
+
+import java.awt.Robot;
+import java.awt.event.KeyEvent;
+import java.util.HashMap;
+import java.util.Map;
+
+import org.openqa.selenium.By;
+import org.openqa.selenium.WebDriver;
+import org.openqa.selenium.WebElement;
+import org.openqa.selenium.chrome.ChromeDriver;
+import org.openqa.selenium.chrome.ChromeOptions;
+
+import io.github.bonigarcia.wdm.WebDriverManager;
+
+public class FirstTestCase {
+	// Launch browser
+	// Launch Login page
+	// Perform Login
+
+	public static void main(String[] args) throws Exception {
+		// Method 1
+//		System.setProperty("webdriver.chrome.driver", "C:\\Jar\\chromedriver-win64\\chromedriver.exe");
+//		WebDriver driver = new ChromeDriver();
+//		driver.get("https://www.skillmuni.in/Skillmuni_Prod/login");
+//		driver.manage().window().maximize();
+//		Thread.sleep(3000);
+//		driver.close();
+
+		// Method-2
+		WebDriverManager.chromedriver().setup();
+		// Create ChromeOptions to disable password manager
+		ChromeOptions options = new ChromeOptions();
+
+		// Disable password manager via preferences
+		Map<String, Object> prefs = new HashMap<>();
+		prefs.put("credentials_enable_service", false);
+		prefs.put("profile.password_manager_enabled", false);
+		prefs.put("profile.default_content_setting_values.notifications", 2); // disable notification popups
+		options.setExperimentalOption("prefs", prefs);
+
+		// Disable save password prompt
+		options.addArguments("--disable-save-password-bubble");
+
+		// Start with a clean, fresh profile
+		options.addArguments("user-data-dir=C:/Temp/ChromeProfile"); // create a fresh user profile
+		options.addArguments("--no-first-run");
+		options.addArguments("--disable-extensions"); // disables all extensions (in case Google Password Manager is
+														// active)
+
+		WebDriver driver = new ChromeDriver(options);
+		driver.get("https://www.skillmuni.in/Skillmuni_Prod/login");
+		System.out.println("Title of the page is =>" + driver.getTitle());
+		System.out.println("Url of the page is =>" + driver.getCurrentUrl());
+		Thread.sleep(3000);
+		driver.manage().window().maximize();
+		Thread.sleep(1000);
+		WebElement userId = driver.findElement(By.xpath("//input[@id='userId']"));
+		userId.clear();
+		userId.sendKeys("healthApp");
+		WebElement password = driver.findElement(By.xpath("//input[@id='password']"));
+		password.clear();
+		password.sendKeys("healthApp");
+		driver.findElement(By.xpath("//button[@class='login-btn']")).click();
+		Robot robot = new Robot();
+		Thread.sleep(2000); // wait for dialog
+		robot.keyPress(KeyEvent.VK_ENTER);
+		robot.keyRelease(KeyEvent.VK_ENTER);
+driver.close();
+
+	}
+
+}

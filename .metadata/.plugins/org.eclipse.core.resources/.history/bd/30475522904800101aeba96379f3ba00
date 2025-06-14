@@ -1,0 +1,32 @@
+package test0905;
+
+import java.awt.Window;
+
+import org.openqa.selenium.WebDriver;
+import org.openqa.selenium.chrome.ChromeDriver;
+
+import io.github.bonigarcia.wdm.WebDriverManager;
+
+public class FirstTestCase {
+
+	public static void main(String[] args) throws Exception {
+		// Method 1
+//		System.setProperty("webdriver.chrome.driver", "C:\\Jar\\chromedriver-win64\\chromedriver.exe");
+//		WebDriver driver = new ChromeDriver();
+//		driver.get("https://www.skillmuni.in/Skillmuni_Prod/login");
+//		driver.manage().window().maximize();
+//		Thread.sleep(3000);
+//		driver.close();
+		// Method-2
+		WebDriverManager.chromedriver().setup();
+		WebDriver driver = new ChromeDriver();
+		driver.get("https://www.skillmuni.in/Skillmuni_Prod/login");
+		System.out.println(driver.getTitle());
+		Thread.sleep(3000);
+		driver.manage().window().maximize();
+		Thread.sleep(3000);
+		driver.close();
+
+	}
+
+}
