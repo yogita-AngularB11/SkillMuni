@@ -14,7 +14,7 @@ public class SecondTestCase {
 
 	public static void main(String[] args) throws Exception {
 
-//		 VerifyTopicCards 
+		//Verify Number Of Category Tiles in KnowledgeKnook
 
 		WebDriverManager.chromedriver().setup();
 		// Create ChromeOptions to disable password manager

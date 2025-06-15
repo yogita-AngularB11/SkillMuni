@@ -1,0 +1,94 @@
+package test0905;
+
+import java.util.List;
+
+import org.openqa.selenium.By;
+import org.openqa.selenium.WebDriver;
+import org.openqa.selenium.WebElement;
+import org.openqa.selenium.chrome.ChromeDriver;
+import org.openqa.selenium.chrome.ChromeOptions;
+
+import io.github.bonigarcia.wdm.WebDriverManager;
+
+public class FourthTestCase {
+	public static void main(String[] args) throws Exception {
+
+		// Verify each Category Tile in KnowledgeKnook is opening
+
+		WebDriverManager.chromedriver().setup();
+		// Create ChromeOptions to disable password manager
+		ChromeOptions options = new ChromeOptions();
+
+		// Optional: Run in incognito to prevent password manager from saving
+		options.addArguments("--incognito");
+
+		// Launch browser
+		WebDriver driver = new ChromeDriver(options);
+		driver.get("https://www.skillmuni.in/Skillmuni_Prod/login");
+		System.out.println("Title of the page is =>" + driver.getTitle());
+		System.out.println("Url of the page is =>" + driver.getCurrentUrl());
+		Thread.sleep(3000);
+		driver.manage().window().maximize();
+
+		// Login
+		Thread.sleep(1000);
+		WebElement userId = driver.findElement(By.xpath("//input[@id='userId']"));
+		userId.clear();
+		userId.sendKeys("healthApp");
+		WebElement password = driver.findElement(By.xpath("//input[@id='password']"));
+		password.clear();
+		password.sendKeys("healthApp");
+		driver.findElement(By.xpath("//button[@class='login-btn']")).click();
+		Thread.sleep(3000);
+
+		// Click "See All" for Knowledge Knook
+		WebElement knowledgeSeeAll = driver.findElement(By.xpath("//a[@href='/Skillmuni_Prod/learning-zone']"));
+		knowledgeSeeAll.click();
+		System.out.println("Clicked Knowledge Knook -> See All");
+
+		// Wait for page to load fully
+		Thread.sleep(5000);
+		// Find all topic cards
+		List<WebElement> cards = driver.findElements(By.xpath("//div[contains(@class,'play-card-content')]"));
+		System.out.println("📚 Total topic cards found: " + cards.size());
+
+		// Loop through and click each card one by one
+		for (int i = 0; i < cards.size(); i++) {
+			// Re-fetch cards to avoid stale elements
+			cards = driver.findElements(By.xpath("//div[contains(@class,'play-card')]"));
+
+			if (i >= cards.size()) {
+				System.out.println("⚠️ No card found at index: " + i);
+				continue;
+			}
+
+			WebElement card = cards.get(i);
+			System.out.println("➡️ Clicking on card #" + (i + 1));
+			card.click();
+
+			Thread.sleep(2000); // Wait for page transition
+
+			try {
+				// Try to locate and click "Let's Go!" button
+				WebElement letsGoBtn = driver.findElement(By.xpath("//button[contains(text(),\"Let's Go\")]"));
+				System.out.println("📝 Pre-assessment screen detected. Clicking 'Let's Go!'");
+				letsGoBtn.click();
+
+				// Optional: wait or simulate answering
+				Thread.sleep(3000);
+
+				// Go back to category screen
+				driver.navigate().back(); // first back: assessment
+				Thread.sleep(2000);
+				driver.navigate().back(); // second back: category list
+				Thread.sleep(3000);
+			} catch (Exception e) {
+				System.out.println("✅ No pre-assessment found or already completed. Skipping...");
+				driver.navigate().back(); // just one back
+				Thread.sleep(3000);
+			}
+		}
+
+		driver.quit();
+	}
+}
