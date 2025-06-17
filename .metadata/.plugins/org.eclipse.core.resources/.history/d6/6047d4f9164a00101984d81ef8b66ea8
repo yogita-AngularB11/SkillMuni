@@ -1,0 +1,7 @@
+package test0905;
+
+//Detects the Skill Level (Beginner / Intermediate / Advanced)
+//Reads the Credits Earned
+public class SeventhTestCase {
+
+}

@@ -29,8 +29,8 @@ public class SixthTestCase {
 	            System.out.println("URL => " + driver.getCurrentUrl());
 
 	            // Login
-	            wait.until(ExpectedConditions.visibilityOfElementLocated(By.id("userId"))).sendKeys("healthApp");
-	            driver.findElement(By.id("password")).sendKeys("healthApp");
+	            wait.until(ExpectedConditions.visibilityOfElementLocated(By.id("userId"))).sendKeys("SonalSeth");
+	            driver.findElement(By.id("password")).sendKeys("tgc@123");
 	            driver.findElement(By.xpath("//button[@class='login-btn']")).click();
 
 	            // Go to Knowledge Knook -> See All
@@ -43,7 +43,8 @@ public class SixthTestCase {
 	            System.out.println("📚 Total topic cards found: " + cards.size());
 
 	            for (int i = 0; i < cards.size(); i++) {
-	                cards = driver.findElements(By.xpath("//div[contains(@class,'play-card-content')]")); // Re-fetch to avoid stale elements
+	                cards = driver.findElements(By.xpath("//div[contains(@class,'play-card-content')]")); 
+	                // Re-fetch to avoid stale elements
 	                if (i >= cards.size()) continue;
 
 	                WebElement card = cards.get(i);

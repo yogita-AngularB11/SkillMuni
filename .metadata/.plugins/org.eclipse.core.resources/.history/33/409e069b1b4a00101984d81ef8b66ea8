@@ -1,0 +1,137 @@
+package test0905;
+
+import java.time.Duration;
+import java.util.List;
+
+import org.openqa.selenium.By;
+import org.openqa.selenium.WebDriver;
+import org.openqa.selenium.WebElement;
+import org.openqa.selenium.chrome.ChromeDriver;
+import org.openqa.selenium.chrome.ChromeOptions;
+import org.openqa.selenium.support.ui.ExpectedConditions;
+import org.openqa.selenium.support.ui.WebDriverWait;
+
+import io.github.bonigarcia.wdm.WebDriverManager;
+
+public class SeventhTestCase {
+	 public static void main(String[] args) {
+	        WebDriverManager.chromedriver().setup();
+	        ChromeOptions options = new ChromeOptions();
+	        options.addArguments("--incognito");
+	        WebDriver driver = new ChromeDriver(options);
+	        WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(10));
+
+	        try {
+	            // Step 1: Login
+	            driver.get("https://www.skillmuni.in/Skillmuni_Prod/login");
+	            driver.manage().window().maximize();
+	            wait.until(ExpectedConditions.visibilityOfElementLocated(By.id("userId"))).sendKeys("healthApp");
+	            driver.findElement(By.id("password")).sendKeys("healthApp");
+	            driver.findElement(By.xpath("//button[@class='login-btn']")).click();
+
+	            // Step 2: Navigate to Knowledge Knook → See All
+	            wait.until(ExpectedConditions.elementToBeClickable(By.xpath("//a[@href='/Skillmuni_Prod/learning-zone']"))).click();
+	            System.out.println("🔎 Entered Knowledge Knook");
+
+	            // Step 3: Loop through topic cards
+	            wait.until(ExpectedConditions.presenceOfElementLocated(By.xpath("//div[contains(@class,'play-card-content')]")));
+	            List<WebElement> cards = driver.findElements(By.xpath("//div[contains(@class,'play-card-content')]"));
+	            System.out.println("📚 Total topic cards found: " + cards.size());
+
+	            for (int i = 0; i < cards.size(); i++) {
+	                cards = driver.findElements(By.xpath("//div[contains(@class,'play-card-content')]"));
+	                if (i >= cards.size()) continue;
+
+	                WebElement card = cards.get(i);
+	                System.out.println("➡️ Clicking on card #" + (i + 1));
+	                card.click();
+
+	                try {
+	                    // Step 4: If pre-assessment screen, click Let's Go
+	                    WebElement letsGoBtn = wait.until(ExpectedConditions.elementToBeClickable(By.xpath("//button[contains(text(),\"Let's Go\")]")));
+	                    System.out.println("📝 Pre-assessment detected. Clicking 'Let's Go'");
+	                    letsGoBtn.click();
+
+	                    // Step 5: Answer all questions
+	                    List<WebElement> questionCards = wait.until(ExpectedConditions.presenceOfAllElementsLocatedBy(
+	                            By.xpath("//div[contains(@class,'question-card')]")));
+	                    System.out.println("❓ Total questions: " + questionCards.size());
+
+	                    for (int q = 0; q < questionCards.size(); q++) {
+	                        questionCards = driver.findElements(By.xpath("//div[contains(@class,'question-card')]"));
+	                        WebElement question = questionCards.get(q);
+
+	                        List<WebElement> options = question.findElements(By.xpath(".//label[contains(@class,'option')]"));
+	                        if (!options.isEmpty()) {
+	                            options.get(0).click(); // click first option
+	                            System.out.println("✅ Answered question #" + (q + 1));
+	                        } else {
+	                            System.out.println("⚠️ No options found for question #" + (q + 1));
+	                        }
+
+	                        Thread.sleep(300); // optional pause
+	                    }
+
+	                    // Step 6: Click Continue button
+	                    try {
+	                        WebElement continueBtn = wait.until(ExpectedConditions.elementToBeClickable(
+	                                By.xpath("//button[contains(text(),'Continue')]")));
+	                        continueBtn.click();
+	                        System.out.println("➡️ Clicked 'Continue' after all answers");
+	                    } catch (Exception noContinue) {
+	                        System.out.println("⚠️ Continue button not found after answering.");
+	                    }
+
+	                } catch (Exception e) {
+	                    System.out.println("✅ No pre-assessment found or already completed.");
+	                }
+
+	                // Step 7: Handle Break Time modal (click NO to continue answering)
+	                try {
+	                    WebElement breakModal = wait.until(ExpectedConditions.visibilityOfElementLocated(
+	                            By.xpath("//h2[contains(text(),'Break Time? A Head’s Up')]")));
+	                    WebElement noBtn = driver.findElement(By.xpath("//button[text()='NO']"));
+	                    noBtn.click();
+	                    System.out.println("🛑 'Break Time' modal detected. Clicked 'NO'.");
+	                } catch (Exception noModal) {
+	                    System.out.println("✅ No 'Break Time' modal appeared.");
+	                }
+
+	                // Navigate back to card list
+	                driver.navigate().back();
+	                Thread.sleep(1500);
+	            }
+
+	            // Step 8: Detect Skill Level & Credits Earned
+	            try {
+	                WebElement creditElement = driver.findElement(By.xpath("//div[contains(text(),'Credits') and contains(text(),'Earned')]"));
+	                System.out.println("🏆 " + creditElement.getText());
+
+	                WebElement skillLevelElement = driver.findElement(By.xpath("//div[contains(@class, 'skillLevelText') or contains(text(),'You’re at the')]"));
+	                String skillLevelText = skillLevelElement.getText();
+	                if (skillLevelText.contains("Beginner")) {
+	                    System.out.println("🎯 Skill Level: Beginner");
+	                } else if (skillLevelText.contains("Intermediate")) {
+	                    System.out.println("🎯 Skill Level: Intermediate");
+	                } else if (skillLevelText.contains("Advanced")) {
+	                    System.out.println("🎯 Skill Level: Advanced");
+	                } else {
+	                    System.out.println("🎯 Skill Level: Unknown");
+	                }
+
+	                // Optional: Click "Start Stage"
+	                WebElement startStageButton = driver.findElement(By.xpath("//button[contains(text(),'Start Stage')]"));
+	                startStageButton.click();
+	                System.out.println("🚀 Clicked 'Start Stage'.");
+
+	            } catch (Exception e) {
+	                System.out.println("⚠️ Could not fetch Credits or Skill Level: " + e.getMessage());
+	            }
+
+	        } catch (Exception e) {
+	            System.out.println("🚫 General error: " + e.getMessage());
+	        } finally {
+	            driver.quit();
+	        }
+	    }
+}
