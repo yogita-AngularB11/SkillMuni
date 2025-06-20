@@ -14,7 +14,7 @@ import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
 
 import io.github.bonigarcia.wdm.WebDriverManager;
-
+//Solve pre-assessment and click on continue
 public class NinethTestCase {
 	public static void main(String[] args) {
 
@@ -39,8 +39,8 @@ public class NinethTestCase {
 			System.out.println("URL => " + driver.getCurrentUrl());
 
 			// Login
-			wait.until(ExpectedConditions.visibilityOfElementLocated(By.id("userId"))).sendKeys("yogita@gmail.com");
-			driver.findElement(By.id("password")).sendKeys("BSA@123");
+			wait.until(ExpectedConditions.visibilityOfElementLocated(By.id("userId"))).sendKeys("healthAppTest");
+			driver.findElement(By.id("password")).sendKeys("healthAppTest");
 			driver.findElement(By.xpath("//button[@class='login-btn']")).click();
 
 			// Go to Knowledge Knook -> See All
@@ -117,6 +117,7 @@ public class NinethTestCase {
 						} catch (Exception e) {
 						    System.out.println("❌ Could not click 'Continue' → " + e.getMessage());
 						}
+						
 					}
 				} catch (Exception e) {
 					System.out.println("✅ No pre-assessment found or already completed for this card.");

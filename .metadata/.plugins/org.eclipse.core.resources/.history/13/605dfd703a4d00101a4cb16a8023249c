@@ -1,0 +1,137 @@
+package test0905;
+
+import java.time.Duration;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import org.openqa.selenium.By;
+import org.openqa.selenium.JavascriptExecutor;
+import org.openqa.selenium.WebDriver;
+import org.openqa.selenium.WebElement;
+import org.openqa.selenium.chrome.ChromeDriver;
+import org.openqa.selenium.chrome.ChromeOptions;
+import org.openqa.selenium.support.ui.ExpectedConditions;
+import org.openqa.selenium.support.ui.WebDriverWait;
+
+import io.github.bonigarcia.wdm.WebDriverManager;
+
+public class ThirteenTestCase {
+    public static void main(String[] args) {
+        WebDriverManager.chromedriver().setup();
+        ChromeOptions options = new ChromeOptions();
+        options.addArguments("--incognito");
+        WebDriver driver = new ChromeDriver(options);
+
+        WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(20));
+        JavascriptExecutor js = (JavascriptExecutor) driver;
+
+        try {
+            driver.get("https://www.skillmuni.in/Skillmuni_Prod/login");
+            driver.manage().window().maximize();
+            System.out.println("Title => " + driver.getTitle());
+            System.out.println("URL => " + driver.getCurrentUrl());
+
+            wait.until(ExpectedConditions.visibilityOfElementLocated(By.id("userId"))).sendKeys("healthApp");
+            driver.findElement(By.id("password")).sendKeys("healthApp");
+            driver.findElement(By.xpath("//button[@class='login-btn']")).click();
+
+            wait.until(ExpectedConditions.elementToBeClickable(By.xpath("//a[@href='/Skillmuni_Prod/learning-zone']"))).click();
+            System.out.println("Clicked Knowledge Knook -> See All");
+
+            wait.until(ExpectedConditions.presenceOfElementLocated(By.xpath("//div[contains(@class,'play-card-content')]")));
+            List<WebElement> categories = driver.findElements(By.xpath("//div[contains(@class,'play-card-content')]"));
+            System.out.println("\uD83D\uDCDA Total categories found: " + categories.size());
+
+            for (int i = 0; i < categories.size(); i++) {
+                categories = driver.findElements(By.xpath("//div[contains(@class,'play-card-content')]"));
+                if (i >= categories.size()) continue;
+
+                WebElement category = categories.get(i);
+                String categoryTitle = category.getText().trim();
+                System.out.println("➡️ Clicking on category #" + (i + 1) + " - Title: " + categoryTitle);
+                js.executeScript("arguments[0].scrollIntoView({block: 'center'});", category);
+                category.click();
+
+                try {
+                    WebElement startStageBtn = wait.until(ExpectedConditions.elementToBeClickable(By.xpath("//button[@class='stage-btn']")));
+                    js.executeScript("arguments[0].scrollIntoView({block: 'center'});", startStageBtn);
+                    startStageBtn.click();
+                    System.out.println("🚀 Clicked on 'Start Stage'");
+
+                    // Wait for subcategory cards
+                    wait.until(ExpectedConditions.presenceOfElementLocated(By.xpath("//div[contains(@class,'category-card')]")));
+                    List<WebElement> subCategories = driver.findElements(By.xpath("//div[contains(@class,'category-card')]"));
+
+                    Map<String, Integer> stageWiseCredits = new HashMap<>();
+                    int totalBriefsSolved = 0, totalBriefs = 0, totalCredits = 0;
+
+                    for (WebElement sub : subCategories) {
+                        String stage = sub.findElement(By.xpath(".//div[contains(@class,'stage-tag')]")).getText().trim();
+                        String quizText = sub.findElement(By.xpath(".//div[contains(@class,'brief-count')]")).getText().trim();
+                        String creditText = sub.findElement(By.xpath(".//div[contains(@class,'credit-count')]")).getText().trim().replace("Credits:", "").trim();
+
+                        int credits = creditText.isEmpty() ? 0 : Integer.parseInt(creditText);
+                        int solved = 0, total = 0;
+                        if (quizText.contains("/")) {
+                            String[] parts = quizText.split("/");
+                            solved = Integer.parseInt(parts[0]);
+                            total = Integer.parseInt(parts[1]);
+                        }
+
+                        stageWiseCredits.put(stage, stageWiseCredits.getOrDefault(stage, 0) + credits);
+                        totalBriefsSolved += solved;
+                        totalBriefs += total;
+                        totalCredits += credits;
+
+                        System.out.println("📘 Stage: " + stage + ", Briefs: " + solved + "/" + total + ", Credits: " + credits);
+
+                        // Only Discover stage is open for click
+                        if (stage.equalsIgnoreCase("Discover") && sub.getText().contains("Discover")) {
+                            js.executeScript("arguments[0].scrollIntoView({block: 'center'});", sub);
+                            sub.click();
+                            Thread.sleep(1500);
+                            driver.navigate().back();
+                            wait.until(ExpectedConditions.presenceOfElementLocated(By.xpath("//div[contains(@class,'category-card')]")));
+                            subCategories = driver.findElements(By.xpath("//div[contains(@class,'category-card')]"));
+                        }
+                    }
+
+                    WebElement topQuizzes = driver.findElement(By.xpath("//div[contains(@class,'top-bar')]//div[contains(text(),'Quizzes')]/following-sibling::div"));
+                    WebElement topCredits = driver.findElement(By.xpath("//div[contains(@class,'top-bar')]//div[contains(text(),'Credits')]/following-sibling::div"));
+
+                    System.out.println("📊 Total Briefs Solved: " + totalBriefsSolved + "/" + totalBriefs);
+                    System.out.println("💰 Total Credits Summed: " + totalCredits);
+                    System.out.println("🧮 Top Summary Quizzes: " + topQuizzes.getText());
+                    System.out.println("💳 Top Summary Credits: " + topCredits.getText());
+
+                    if (topCredits.getText().equals(String.valueOf(totalCredits))) {
+                        System.out.println("✅ Credits match with top summary.");
+                    } else {
+                        System.out.println("❌ Credits mismatch!");
+                    }
+
+                    String[] quizParts = topQuizzes.getText().split("/");
+                    int topSolved = Integer.parseInt(quizParts[0].trim());
+                    int topTotal = Integer.parseInt(quizParts[1].trim());
+                    if (topSolved == totalBriefsSolved && topTotal == totalBriefs) {
+                        System.out.println("✅ Quiz count matches with subcategory totals.");
+                    } else {
+                        System.out.println("❌ Quiz count mismatch!");
+                    }
+
+                } catch (Exception e) {
+                    System.out.println("❌ Error inside category → " + e.getMessage());
+                }
+
+                driver.navigate().back();
+                Thread.sleep(2000);
+            }
+
+        } catch (Exception e) {
+            System.out.println("❌ Error occurred: " + e.getMessage());
+        } finally {
+            driver.quit();
+        }
+    }
+}

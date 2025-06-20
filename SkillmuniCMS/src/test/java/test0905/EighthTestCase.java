@@ -15,6 +15,8 @@ import org.openqa.selenium.support.ui.WebDriverWait;
 
 import io.github.bonigarcia.wdm.WebDriverManager;
 
+
+//Check for "Continue" enabled or not
 public class EighthTestCase {
 	public static void main(String[] args) {
 
