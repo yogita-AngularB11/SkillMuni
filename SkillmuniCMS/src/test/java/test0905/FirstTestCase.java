@@ -7,7 +7,7 @@ import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.chrome.ChromeOptions;
 
 import io.github.bonigarcia.wdm.WebDriverManager;
-
+//Check login and click on "See all" to check for working 
 public class FirstTestCase {
 	// Launch browser
 	// Launch Login page

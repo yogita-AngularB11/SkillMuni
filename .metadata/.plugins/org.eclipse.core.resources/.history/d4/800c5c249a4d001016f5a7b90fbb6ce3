@@ -1,0 +1,61 @@
+package test0905;
+
+import java.util.List;
+
+import org.openqa.selenium.By;
+import org.openqa.selenium.WebDriver;
+import org.openqa.selenium.WebElement;
+import org.openqa.selenium.chrome.ChromeDriver;
+import org.openqa.selenium.chrome.ChromeOptions;
+
+import io.github.bonigarcia.wdm.WebDriverManager;
+// Tets case to check youtube links
+public class FourteenTestCase {
+	public static void main(String[] args) throws Exception {
+	
+		WebDriverManager.chromedriver().setup();
+		// Create ChromeOptions to disable password manager
+		ChromeOptions options = new ChromeOptions();
+
+		// Optional: Run in incognito to prevent password manager from saving
+		options.addArguments("--incognito");
+
+		// Launch browser
+		WebDriver driver = new ChromeDriver(options);
+		driver.get("https://www.skillmuni.in/Skillmuni_Prod/login");
+		
+		Thread.sleep(3000);
+		driver.manage().window().maximize();
+
+		// Login
+		Thread.sleep(1000);
+		WebElement userId = driver.findElement(By.xpath("//input[@id='userId']"));
+		userId.clear();
+		userId.sendKeys("healthApp");
+		WebElement password = driver.findElement(By.xpath("//input[@id='password']"));
+		password.clear();
+		password.sendKeys("healthApp");
+		driver.findElement(By.xpath("//button[@class='login-btn']")).click();
+		Thread.sleep(3000);
+
+		// Click "See All" for Knowledge Knook
+		WebElement knowledgeSeeAll = driver.findElement(By.xpath("//a[@href='/Skillmuni_Prod/learning-zone']"));
+		knowledgeSeeAll.click();
+		System.out.println("Clicked Knowledge Knook -> See All");
+		
+		// Wait for page to load fully
+		Thread.sleep(5000);
+
+		// Find all Category that are existing
+		List<WebElement> categories = driver.findElements(By.xpath("//div[contains(@class,'play-card-content')]"));
+		// Print alt text or any relevant data (like headings)
+		for (int i = 0; i < categories.size(); i++) {
+			WebElement category = categories.get(i);
+			String categoryName = category.getText().trim();
+			System.out.println("▶️ Category Name " + (i + 1) + ": " + categoryName + "\t");
+			category.click();
+		}
+
+	}
+
+}

@@ -1,0 +1,114 @@
+package test0905;
+
+import java.time.Duration;
+import java.util.List;
+
+import org.openqa.selenium.By;
+import org.openqa.selenium.WebDriver;
+import org.openqa.selenium.WebElement;
+import org.openqa.selenium.chrome.ChromeDriver;
+import org.openqa.selenium.chrome.ChromeOptions;
+import org.openqa.selenium.support.ui.ExpectedConditions;
+import org.openqa.selenium.support.ui.WebDriverWait;
+
+import io.github.bonigarcia.wdm.WebDriverManager;
+
+public class FifteenthTestCase {
+	 public static void main(String[] args) throws Exception {
+
+	        WebDriverManager.chromedriver().setup();
+
+	        ChromeOptions options = new ChromeOptions();
+	        options.addArguments("--incognito");
+
+	        WebDriver driver = new ChromeDriver(options);
+	        WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(10));
+
+	        driver.get("https://www.skillmuni.in/Skillmuni_Prod/login");
+	        driver.manage().window().maximize();
+	        Thread.sleep(2000);
+
+	        // Login
+	        WebElement userId = driver.findElement(By.id("userId"));
+	        userId.clear();
+	        userId.sendKeys("healthApp");
+
+	        WebElement password = driver.findElement(By.id("password"));
+	        password.clear();
+	        password.sendKeys("healthApp");
+
+	        driver.findElement(By.className("login-btn")).click();
+	        Thread.sleep(3000);
+
+	        // Navigate to Knowledge Knook
+	        WebElement knowledgeSeeAll = driver.findElement(By.xpath("//a[@href='/Skillmuni_Prod/learning-zone']"));
+	        knowledgeSeeAll.click();
+	        System.out.println("✅ Clicked Knowledge Knook -> See All");
+
+	        wait.until(ExpectedConditions.visibilityOfElementLocated(By.xpath("//div[contains(@class,'play-card-content')]")));
+
+	        // Get total number of categories once
+	        List<WebElement> categoryElements = driver.findElements(By.xpath("//div[contains(@class,'play-card-content')]"));
+	        int totalCategories = categoryElements.size();
+
+	        for (int i = 0; i < totalCategories; i++) {
+
+	            // Re-fetch categories after navigation or DOM changes
+	            List<WebElement> categories = driver.findElements(By.xpath("//div[contains(@class,'play-card-content')]"));
+
+	            if (categories.size() <= i) {
+	                System.out.println("⚠️ Category index " + i + " is out of bounds. Skipping...");
+	                continue;
+	            }
+
+	            WebElement category = categories.get(i);
+	            String categoryName = category.getText().trim().split("\n")[0]; // Just the name
+	            System.out.println("\n▶️ Category Name " + (i + 1) + ": " + categoryName);
+
+	            category.click();
+	            System.out.println("➡️ Clicked on Category #" + (i + 1));
+	            Thread.sleep(3000);
+
+	            try {
+//	                wait.until(ExpectedConditions.visibilityOfElementLocated(By.xpath("//div[contains(@class,'card')]")));
+	                
+	             // Wait until at least one card is visible (indicating the page is loaded)
+	                By allCardsLocator = By.xpath("//div[contains(@class, 'cards-container')]/div[contains(@class, 'card')]");
+	                wait.until(ExpectedConditions.visibilityOfElementLocated(allCardsLocator));
+
+	                // Get all cards
+	                List<WebElement> cards = driver.findElements(allCardsLocator);
+	                System.out.println("🃏 Total subcategory cards loaded: " + cards.size());
+
+
+	                for (WebElement card : cards) {
+	                    try {
+	                        // Title is inside <p class="card-title">
+	                        String title = card.findElement(By.xpath(".//p[contains(@class,'card-title')]")).getText().trim();
+
+	                        // Stage is inside <span class="stage-text">
+	                        String stage = card.findElement(By.xpath(".//span[contains(@class,'stage-text')]")).getText().trim();
+
+	                        System.out.println("🧩 Stage: " + stage + " | 📘 Sub-Category Title: " + title);
+	                        card.click();
+	                        Thread.sleep(3000);
+	                        wait.until(ExpectedConditions.visibilityOfElementLocated(By.xpath("//div[@class='drag-icon']")));
+	                        
+	                    } catch (Exception e) {
+	                        System.out.println("⚠️ Couldn't extract one of the cards properly.");
+	                    }
+	                }
+	            } catch (Exception e) {
+	                System.out.println("⚠️ No stages found or not visible for this category.");
+	            }
+
+	            // Go back and wait for categories to reload
+	            driver.navigate().back();
+	            wait.until(ExpectedConditions.visibilityOfElementLocated(By.xpath("//div[contains(@class,'play-card-content')]")));
+	            Thread.sleep(2000); // Small buffer
+	        }
+
+	        System.out.println("\n✅ Test case completed.");
+	        driver.quit();
+	    }
+}

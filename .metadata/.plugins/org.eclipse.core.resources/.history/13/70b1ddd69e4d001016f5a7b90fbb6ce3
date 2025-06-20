@@ -1,0 +1,97 @@
+package test0905;
+
+import java.time.Duration;
+import java.util.List;
+
+import org.openqa.selenium.By;
+import org.openqa.selenium.WebDriver;
+import org.openqa.selenium.WebElement;
+import org.openqa.selenium.chrome.ChromeDriver;
+import org.openqa.selenium.chrome.ChromeOptions;
+import org.openqa.selenium.support.ui.ExpectedConditions;
+import org.openqa.selenium.support.ui.WebDriverWait;
+
+import io.github.bonigarcia.wdm.WebDriverManager;
+
+// Test case to check YouTube links under Knowledge Knook categories
+public class FourteenTestCase {
+    public static void main(String[] args) throws Exception {
+
+        WebDriverManager.chromedriver().setup();
+
+        ChromeOptions options = new ChromeOptions();
+        options.addArguments("--incognito");
+
+        WebDriver driver = new ChromeDriver(options);
+        WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(10));
+
+        driver.get("https://www.skillmuni.in/Skillmuni_Prod/login");
+        driver.manage().window().maximize();
+        Thread.sleep(2000);
+
+        // Login
+        WebElement userId = driver.findElement(By.id("userId"));
+        userId.clear();
+        userId.sendKeys("healthApp");
+
+        WebElement password = driver.findElement(By.id("password"));
+        password.clear();
+        password.sendKeys("healthApp");
+
+        driver.findElement(By.className("login-btn")).click();
+        Thread.sleep(3000);
+
+        // Navigate to Knowledge Knook
+        WebElement knowledgeSeeAll = driver.findElement(By.xpath("//a[@href='/Skillmuni_Prod/learning-zone']"));
+        knowledgeSeeAll.click();
+        System.out.println("✅ Clicked Knowledge Knook -> See All");
+
+        Thread.sleep(4000);
+
+        // Loop through each category
+        List<WebElement> categories = driver.findElements(By.xpath("//div[contains(@class,'play-card-content')]"));
+        for (int i = 0; i < categories.size(); i++) {
+
+            // Re-fetch the categories list each loop (DOM changes after click)
+            categories = driver.findElements(By.xpath("//div[contains(@class,'play-card-content')]"));
+            WebElement category = categories.get(i);
+            String categoryName = category.getText().trim();
+            System.out.println("\n▶️ Category Name " + (i + 1) + ": " + categoryName);
+
+            category.click();
+            System.out.println("➡️ Clicked on Category #" + (i + 1));
+
+            wait.until(ExpectedConditions.presenceOfElementLocated(By.xpath("//div[contains(@class,'stat-count')]")));
+
+          
+
+            // Loop through stages
+            List<WebElement> stages = driver.findElements(By.xpath("//div[@class='stage-text']"));
+            for (WebElement stage : stages) {
+                String stageTitle = stage.findElement(By.xpath(".//h3")).getText();
+                System.out.println("🧩 Stage: " + stageTitle);
+
+                List<WebElement> subCards = stage.findElements(By.xpath(".//div[@class='brief-card']"));
+                int totalCreditsInStage = 0, solved = 0, totalBriefs = 0;
+
+                for (WebElement card : subCards) {
+                    String solvedBriefsText = card.findElement(By.xpath(".//div[@class='brief-counter']")).getText();
+                    String[] split = solvedBriefsText.replace("SOLVED", "").trim().split("/");
+
+                    if (split.length == 2) {
+                        solved += Integer.parseInt(split[0].trim());
+                        totalBriefs += Integer.parseInt(split[1].trim());
+                    }
+                }
+
+                System.out.println("✅ Completed " + solved + "/" + totalBriefs + " briefs in this stage.");
+            }
+
+            // Navigate back to Knowledge Knook category list
+            driver.navigate().back();
+            Thread.sleep(3000);
+        }
+
+        driver.quit();
+    }
+}

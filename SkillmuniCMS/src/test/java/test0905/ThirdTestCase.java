@@ -26,8 +26,8 @@ public class ThirdTestCase {
 		// Launch browser
 		WebDriver driver = new ChromeDriver(options);
 		driver.get("https://www.skillmuni.in/Skillmuni_Prod/login");
-		System.out.println("Title of the page is =>" + driver.getTitle());
-		System.out.println("Url of the page is =>" + driver.getCurrentUrl());
+		//System.out.println("Title of the page is =>" + driver.getTitle());
+		//System.out.println("Url of the page is =>" + driver.getCurrentUrl());
 		Thread.sleep(3000);
 		driver.manage().window().maximize();
 

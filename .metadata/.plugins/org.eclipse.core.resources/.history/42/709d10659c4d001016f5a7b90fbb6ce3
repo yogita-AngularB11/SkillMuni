@@ -1,0 +1,87 @@
+package test0905;
+
+import java.util.List;
+
+import org.openqa.selenium.By;
+import org.openqa.selenium.WebDriver;
+import org.openqa.selenium.WebElement;
+import org.openqa.selenium.chrome.ChromeDriver;
+import org.openqa.selenium.chrome.ChromeOptions;
+import org.openqa.selenium.support.ui.ExpectedConditions;
+
+import io.github.bonigarcia.wdm.WebDriverManager;
+// Tets case to check youtube links
+public class FourteenTestCase {
+	public static void main(String[] args) throws Exception {
+	
+		WebDriverManager.chromedriver().setup();
+		// Create ChromeOptions to disable password manager
+		ChromeOptions options = new ChromeOptions();
+
+		// Optional: Run in incognito to prevent password manager from saving
+		options.addArguments("--incognito");
+
+		// Launch browser
+		WebDriver driver = new ChromeDriver(options);
+		driver.get("https://www.skillmuni.in/Skillmuni_Prod/login");
+		
+		Thread.sleep(3000);
+		driver.manage().window().maximize();
+
+		// Login
+		Thread.sleep(1000);
+		WebElement userId = driver.findElement(By.xpath("//input[@id='userId']"));
+		userId.clear();
+		userId.sendKeys("healthApp");
+		WebElement password = driver.findElement(By.xpath("//input[@id='password']"));
+		password.clear();
+		password.sendKeys("healthApp");
+		driver.findElement(By.xpath("//button[@class='login-btn']")).click();
+		Thread.sleep(3000);
+
+		// Click "See All" for Knowledge Knook
+		WebElement knowledgeSeeAll = driver.findElement(By.xpath("//a[@href='/Skillmuni_Prod/learning-zone']"));
+		knowledgeSeeAll.click();
+		System.out.println("Clicked Knowledge Knook -> See All");
+		
+		// Wait for page to load fully
+		Thread.sleep(5000);
+
+		// Find all Category that are existing
+		List<WebElement> categories = driver.findElements(By.xpath("//div[contains(@class,'play-card-content')]"));
+		// Print alt text or any relevant data (like headings)
+		for (int i = 0; i < categories.size(); i++) {
+			WebElement category = categories.get(i);
+			String categoryName = category.getText().trim();
+			System.out.println("▶️ Category Name " + (i + 1) + ": " + categoryName + "\t");
+			category.click();
+			System.out.println("➡️ Clicked on Category #" + (i + 1));
+		}
+		WebElement startStageBtn = wait.until(ExpectedConditions.elementToBeClickable(By.xpath("//button[@class='stage-btn']")));
+        js.executeScript("arguments[0].scrollIntoView({block: 'center'});", startStageBtn);
+        startStageBtn.click();
+        System.out.println("🚀 Clicked on 'Start Stage'");
+        Thread.sleep(1500);
+
+        // Log stage-level summary details
+        WebElement quizzes = wait.until(ExpectedConditions.presenceOfElementLocated(By.xpath("//div[contains(@class,'quiz-summary')]/div[1]")));
+        WebElement totalCredits = driver.findElement(By.xpath("//div[contains(@class,'quiz-summary')]/div[2]"));
+        System.out.println("📊 " + quizzes.getText().trim());
+        System.out.println("🏅 " + totalCredits.getText().trim());
+
+        List<WebElement> stages = driver.findElements(By.xpath("//div[@class='stage-text']"));
+        for (WebElement stage : stages) {
+            String stageTitle = stage.findElement(By.xpath(".//h3")).getText();
+            List<WebElement> subCards = stage.findElements(By.xpath(".//div[@class='brief-card']"));
+            int totalCreditsInStage = 0, solved = 0, totalBriefs = 0;
+
+            for (WebElement card : subCards) {
+                String solvedBriefsText = card.findElement(By.xpath(".//div[@class='brief-counter']")).getText();
+                String[] split = solvedBriefsText.replace("SOLVED", "").trim().split("/");
+                if (split.length == 2) {
+                    solved += Integer.parseInt(split[0].trim());
+                    totalBriefs += Integer.parseInt(split[1].trim());
+                }
+	}
+
+}

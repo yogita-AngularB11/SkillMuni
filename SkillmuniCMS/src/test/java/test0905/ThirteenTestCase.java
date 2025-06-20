@@ -109,7 +109,7 @@ public class ThirteenTestCase {
                     System.out.println("📊 " + quizzes.getText().trim());
                     System.out.println("🏅 " + totalCredits.getText().trim());
 
-                    List<WebElement> stages = driver.findElements(By.xpath("//div[@class='brief-stage-container']"));
+                    List<WebElement> stages = driver.findElements(By.xpath("//div[@class='stage-text']"));
                     for (WebElement stage : stages) {
                         String stageTitle = stage.findElement(By.xpath(".//h3")).getText();
                         List<WebElement> subCards = stage.findElements(By.xpath(".//div[@class='brief-card']"));
