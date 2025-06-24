@@ -1,8 +1,7 @@
 package test0905;
-
+//----------------------------------------Finally Worked well For Knowledge Knook---------------------------------
 import java.time.Duration;
 import java.util.List;
-
 import org.openqa.selenium.By;
 import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.WebDriver;
@@ -12,7 +11,6 @@ import org.openqa.selenium.chrome.ChromeOptions;
 import org.openqa.selenium.interactions.Actions;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
-
 import io.github.bonigarcia.wdm.WebDriverManager;
 
 public class SeventeenTestCase {
@@ -28,20 +26,23 @@ public class SeventeenTestCase {
 		driver.manage().window().maximize();
 		Thread.sleep(2000);
 
-		driver.findElement(By.id("userId")).sendKeys("healthApp");
-		driver.findElement(By.id("password")).sendKeys("healthApp");
+		driver.findElement(By.id("userId")).sendKeys("Ayaan_HC");
+		driver.findElement(By.id("password")).sendKeys("Ayaan_HC");
 		driver.findElement(By.className("login-btn")).click();
 		Thread.sleep(3000);
 
 		driver.findElement(By.xpath("//a[@href='/Skillmuni_Prod/learning-zone']")).click();
 		System.out.println("✅ Clicked Knowledge Knook -> See All");
 
-		wait.until(ExpectedConditions.visibilityOfElementLocated(By.xpath("//div[contains(@class,'play-card-content')]")));
-		List<WebElement> categoryElements = driver.findElements(By.xpath("//div[contains(@class,'play-card-content')]"));
+		wait.until(
+				ExpectedConditions.visibilityOfElementLocated(By.xpath("//div[contains(@class,'play-card-content')]")));
+		List<WebElement> categoryElements = driver
+				.findElements(By.xpath("//div[contains(@class,'play-card-content')]"));
 
 		for (int i = 0; i < categoryElements.size(); i++) {
+			// Re-fetch category list after each return
 			List<WebElement> categories = driver.findElements(By.xpath("//div[contains(@class,'play-card-content')]"));
-			if (categories.size() <= i)
+			if (i >= categories.size())
 				continue;
 
 			WebElement category = categories.get(i);
@@ -54,116 +55,121 @@ public class SeventeenTestCase {
 			Thread.sleep(3000);
 
 			try {
-				By allCardsLocator = By.xpath("//div[contains(@class, 'cards-container')]/div[contains(@class, 'card')]");
-				wait.until(ExpectedConditions.visibilityOfElementLocated(allCardsLocator));
+				By cardLocator = By.xpath("//div[contains(@class, 'cards-container')]/div[contains(@class, 'card')]");
+				wait.until(ExpectedConditions.visibilityOfElementLocated(cardLocator));
 
-				List<WebElement> cards = driver.findElements(allCardsLocator);
-
+				List<WebElement> cards = driver.findElements(cardLocator);
 				for (int c = 0; c < cards.size(); c++) {
-					cards = driver.findElements(allCardsLocator);
+					cards = driver.findElements(cardLocator);
+					if (c >= cards.size())
+						continue;
+
 					WebElement card = cards.get(c);
+					String title = card.findElement(By.xpath(".//p[contains(@class,'card-title')]")).getText().trim();
+					String stage = card.findElement(By.xpath(".//span[contains(@class,'stage-text')]")).getText()
+							.trim();
+					System.out.println("📘 Sub-Category: " + title);
+					System.out.println("🧩 Stage: " + stage);
 
-					try {
-						String title = card.findElement(By.xpath(".//p[contains(@class,'card-title')]")).getText().trim();
-						String stage = card.findElement(By.xpath(".//span[contains(@class,'stage-text')]")).getText().trim();
-						System.out.println("📘 Sub-Category: " + title);
-						System.out.println("🧩 Stage: " + stage);
+					js.executeScript("arguments[0].scrollIntoView(true);", card);
+					Thread.sleep(1000);
+					js.executeScript("arguments[0].click();", card);
+					Thread.sleep(2000);
 
-						js.executeScript("arguments[0].scrollIntoView(true);", card);
-						Thread.sleep(500);
-						js.executeScript("arguments[0].click();", card);
+					wait.until(ExpectedConditions.visibilityOfElementLocated(By.xpath("//div[@class='drag-track']")));
+					System.out.println("✅ 'Drag right to Dive In' is visible");
 
-						wait.until(ExpectedConditions.visibilityOfElementLocated(By.xpath("//div[@class='drag-track']")));
-						System.out.println("✅ 'Drag right to Dive In' is visible");
+					js.executeScript("window.scrollTo(0, 0);");
+					for (int s = 0; s < 15; s++) {
+						js.executeScript("window.scrollBy(0, 300);");
+						Thread.sleep(300);
+					}
 
-						js.executeScript("window.scrollTo(0, 0);");
-						Thread.sleep(1000);
-						for (int s = 0; s < 15; s++) {
-							js.executeScript("window.scrollBy(0, 300);");
-							Thread.sleep(500);
-						}
+					List<WebElement> briefs = driver.findElements(By.xpath("//div[contains(@class,'scroll-item')]"));
+					System.out.println("📦 Total briefs: " + briefs.size());
 
-						List<WebElement> briefs = driver.findElements(By.xpath("//div[contains(@class,'scroll-item')]"));
-						System.out.println("📦 Total briefs: " + briefs.size());
+					for (int j = 0; j < briefs.size(); j++) {
+						briefs = driver.findElements(By.xpath("//div[contains(@class,'scroll-item')]"));
+						if (j >= briefs.size())
+							continue;
 
-						for (int j = 0; j < briefs.size(); j++) {
-							briefs = driver.findElements(By.xpath("//div[contains(@class,'scroll-item')]"));
-							WebElement brief = briefs.get(j);
+						WebElement brief = briefs.get(j);
+						boolean hasVideo = !brief
+								.findElements(By.xpath(".//iframe[contains(@src,'youtube.com/embed/')]")).isEmpty();
+						boolean isSolved = !brief.findElements(By.xpath(
+								".//button[contains(text(),'You did it!')] | .//div[contains(@class,'drag-text') and contains(text(),'Drag right to Dive In')]"))
+								.isEmpty();
 
-							boolean hasVideo = !brief.findElements(By.xpath(".//iframe[contains(@src,'youtube.com/embed/')]")).isEmpty();
-							boolean isSolved = !brief.findElements(By.xpath(
-									".//button[contains(text(),'You did it!')] | .//div[contains(@class,'drag-text') and contains(text(),'Drag right to Dive In')]"))
-									.isEmpty();
+						System.out.println("Brief #" + (j + 1) + " " + (hasVideo ? "🎥 has Video" : "🖼️ No Video")
+								+ " - "
+								+ (isSolved ? "✅ Brief Pre-Assessment Solved" : "⏳ Brief Pre-Assessment Not Solved"));
 
-							System.out.println("Brief #" + (j + 1) + " " + (hasVideo ? "🎥 has Video" : "🖼️ No Video") + " - "
-									+ (isSolved ? "✅ Solved" : "⏳ Not Solved"));
+						if (hasVideo) {
+							try {
+								WebElement iframe = brief
+										.findElement(By.xpath(".//iframe[contains(@src,'youtube.com/embed/')]"));
+								js.executeScript("arguments[0].scrollIntoView(true);", iframe);
+								Thread.sleep(1000);
 
-							if (hasVideo) {
-								try {
-									WebElement iframe = brief.findElement(By.xpath(".//iframe[contains(@src,'youtube.com/embed/')]"));
-									js.executeScript("arguments[0].scrollIntoView(true);", iframe);
-									Thread.sleep(1000);
+								// Simulate user gesture
+								new Actions(driver).moveToElement(iframe).click().perform();
+								Thread.sleep(1000);
 
-									new Actions(driver).moveToElement(iframe).click().perform();
-									Thread.sleep(1000);
+								driver.switchTo().frame(iframe);
 
-									driver.switchTo().frame(iframe);
+								// Try clicking Play
+								js.executeScript("var iframeWin = window; iframeWin.postMessage(JSON.stringify({"
+										+ "event: 'command', func: 'mute', args: []}), '*');"
+										+ "iframeWin.postMessage(JSON.stringify({"
+										+ "event: 'command', func: 'playVideo', args: []}), '*');");
+								Thread.sleep(4000);
 
-									// ✅ Check for video errors inside iframe
-									List<WebElement> errorOverlays = driver.findElements(
-										By.xpath("//*[contains(text(),'Video unavailable') or contains(text(),'Playback') or contains(text(),'private')]")
-									);
-									if (!errorOverlays.isEmpty()) {
-										System.out.println("❌ Video is not available: " + errorOverlays.get(0).getText());
-										driver.switchTo().defaultContent();
-										continue;
-									}
+								// JS to check video state: paused = false means it's playing
+								Long state = (Long) js.executeScript(
+										"let v = document.querySelector('video'); return v ? (v.paused ? 2 : 1) : 0;");
+								if (state == 1) {
+									System.out.println("✅ Video is playing (via JS check)!");
 
-									// ✅ Mute & Play via JS
+									driver.switchTo().defaultContent(); // 👈 Step out of the iframe
+
+									// ✅ Pause the video from parent window using YouTube's API
 									js.executeScript(
-										"var iframeWin = window; iframeWin.postMessage(JSON.stringify({" +
-										"event: 'command', func: 'mute', args: []}), '*');" +
-										"iframeWin.postMessage(JSON.stringify({" +
-										"event: 'command', func: 'playVideo', args: []}), '*');"
-									);
-									Thread.sleep(4000);
+											"var iframe = arguments[0];"
+													+ "iframe.contentWindow.postMessage(JSON.stringify({"
+													+ "event: 'command', func: 'pauseVideo', args: []}), '*');",
+											iframe);
 
-									// ✅ Verify playing state
-									Long state = (Long) js.executeScript(
-											"let v = document.querySelector('video'); return v ? (v.paused ? 2 : 1) : 0;");
-									if (state == 1) {
-										System.out.println("✅ Video is playing (via JS check)!");
-										// ✅ Pause to stop multiple videos playing
-										js.executeScript(
-											"var iframeWin = window; iframeWin.postMessage(JSON.stringify({" +
-											"event: 'command', func: 'pauseVideo', args: []}), '*');"
-										);
-										Thread.sleep(500);
-									} else if (state == 2) {
-										System.out.println("❌ Video is paused.");
-									} else {
-										System.out.println("⚠️ No video tag found.");
-									}
+									Thread.sleep(500); // Give it a moment to take effect
+								} else if (state == 2) {
+									System.out.println("❌ Video is paused.");
+								} else {
+									System.out.println("⚠️ No video tag found.");
+								}
 
+								driver.switchTo().defaultContent();
+							} catch (Exception e) {
+								System.out.println("⚠️ Could not verify video state: " + e.getMessage());
+								try {
 									driver.switchTo().defaultContent();
-								} catch (Exception e) {
-									System.out.println("⚠️ Could not verify video state: " + e.getMessage());
-									try {
-										driver.switchTo().defaultContent();
-									} catch (Exception ex) {
-										System.out.println("⚠️ Error returning from iframe: " + ex.getMessage());
-									}
+								} catch (Exception ex) {
+									System.out.println("⚠️ Error returning from iframe: " + ex.getMessage());
 								}
 							}
 						}
-					} catch (Exception e) {
-						System.out.println("⚠️ Error in subcategory: " + e.getMessage());
+						// ✅ NOW switch back to default content
+						driver.switchTo().defaultContent();
+						Thread.sleep(1000);
 					}
+					Thread.sleep(3000);
+					driver.navigate().back();
+					wait.until(ExpectedConditions.visibilityOfElementLocated(cardLocator));
+					Thread.sleep(3000);
 				}
 			} catch (Exception e) {
 				System.out.println("⚠️ Category issue: " + e.getMessage());
 			}
 
+			// Go back to category screen
 			driver.navigate().back();
 			wait.until(ExpectedConditions
 					.visibilityOfElementLocated(By.xpath("//div[contains(@class,'play-card-content')]")));
