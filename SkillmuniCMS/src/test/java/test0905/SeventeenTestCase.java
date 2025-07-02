@@ -18,6 +18,7 @@ public class SeventeenTestCase {
 		WebDriverManager.chromedriver().setup();
 		ChromeOptions options = new ChromeOptions();
 		options.addArguments("--incognito");
+		 options.addArguments("--mute-audio");
 		WebDriver driver = new ChromeDriver(options);
 		WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(10));
 		JavascriptExecutor js = (JavascriptExecutor) driver;
@@ -26,8 +27,8 @@ public class SeventeenTestCase {
 		driver.manage().window().maximize();
 		Thread.sleep(2000);
 
-		driver.findElement(By.id("userId")).sendKeys("Ayaan_HC");
-		driver.findElement(By.id("password")).sendKeys("Ayaan_HC");
+		driver.findElement(By.id("userId")).sendKeys("applicationuser1");
+		driver.findElement(By.id("password")).sendKeys("applicationuser1");
 		driver.findElement(By.className("login-btn")).click();
 		Thread.sleep(3000);
 
@@ -68,9 +69,11 @@ public class SeventeenTestCase {
 					String title = card.findElement(By.xpath(".//p[contains(@class,'card-title')]")).getText().trim();
 					String stage = card.findElement(By.xpath(".//span[contains(@class,'stage-text')]")).getText()
 							.trim();
+					System.out.println("-----------------------------------------------------------------------------");
 					System.out.println("📘 Sub-Category: " + title);
+					System.out.println("-----------------------------------------------------------------------------");
 					System.out.println("🧩 Stage: " + stage);
-
+					System.out.println("-----------------------------------------------------------------------------");
 					js.executeScript("arguments[0].scrollIntoView(true);", card);
 					Thread.sleep(1000);
 					js.executeScript("arguments[0].click();", card);
@@ -87,7 +90,7 @@ public class SeventeenTestCase {
 
 					List<WebElement> briefs = driver.findElements(By.xpath("//div[contains(@class,'scroll-item')]"));
 					System.out.println("📦 Total briefs: " + briefs.size());
-
+					System.out.println("-----------------------------------------------------------------------------");
 					for (int j = 0; j < briefs.size(); j++) {
 						briefs = driver.findElements(By.xpath("//div[contains(@class,'scroll-item')]"));
 						if (j >= briefs.size())
@@ -100,10 +103,10 @@ public class SeventeenTestCase {
 								".//button[contains(text(),'You did it!')] | .//div[contains(@class,'drag-text') and contains(text(),'Drag right to Dive In')]"))
 								.isEmpty();
 
-						System.out.println("Brief #" + (j + 1) + " " + (hasVideo ? "🎥 has Video" : "🖼️ No Video")
+						System.out.println("Brief #" + (j + 1) + " " + (hasVideo ? "🎥 has Video" : "🖼️ has Image")
 								+ " - "
-								+ (isSolved ? "✅ Brief Pre-Assessment Solved" : "⏳ Brief Pre-Assessment Not Solved"));
-
+								+ (isSolved ? "✅ Brief Assessment Solved" : "⏳ Brief Assessment Not Solved"));
+						System.out.println();
 						if (hasVideo) {
 							try {
 								WebElement iframe = brief
@@ -122,7 +125,7 @@ public class SeventeenTestCase {
 										+ "event: 'command', func: 'mute', args: []}), '*');"
 										+ "iframeWin.postMessage(JSON.stringify({"
 										+ "event: 'command', func: 'playVideo', args: []}), '*');");
-								Thread.sleep(4000);
+								Thread.sleep(2000);
 
 								// JS to check video state: paused = false means it's playing
 								Long state = (Long) js.executeScript(
@@ -141,7 +144,7 @@ public class SeventeenTestCase {
 
 									Thread.sleep(500); // Give it a moment to take effect
 								} else if (state == 2) {
-									System.out.println("❌ Video is paused.");
+									System.out.println("\u001B[31m ❌ Video is paused.\u001B[0m");
 								} else {
 									System.out.println("⚠️ No video tag found.");
 								}

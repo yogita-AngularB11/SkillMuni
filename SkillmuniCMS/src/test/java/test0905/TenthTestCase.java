@@ -30,14 +30,16 @@ public class TenthTestCase {
         int[] answers = {3, 2, 4, 1, 1, 2, 3, 1, 4, 2};
 
         try {
-            driver.get("https://www.skillmuni.in/Skillmuni_Prod/login");
+        	driver.get("https://www.skillmuni.in/Skillmuni_Prod/skillmuni-login");
             driver.manage().window().maximize();
             System.out.println("Title => " + driver.getTitle());
             System.out.println("URL => " + driver.getCurrentUrl());
 
-            wait.until(ExpectedConditions.visibilityOfElementLocated(By.id("userId"))).sendKeys("healthAppTest");
-            driver.findElement(By.id("password")).sendKeys("healthAppTest");
+            // Login
+            wait.until(ExpectedConditions.visibilityOfElementLocated(By.id("userId"))).sendKeys("appuser0207");
+            driver.findElement(By.id("password")).sendKeys("appuser0207");
             driver.findElement(By.xpath("//button[@class='login-btn']")).click();
+            Thread.sleep(3000);
 
             wait.until(ExpectedConditions.elementToBeClickable(By.xpath("//a[@href='/Skillmuni_Prod/learning-zone']"))).click();
             System.out.println("Clicked Knowledge Knook -> See All");

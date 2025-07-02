@@ -1,5 +1,6 @@
 package test0905;
 
+import java.time.Duration;
 import java.util.List;
 
 import org.openqa.selenium.By;
@@ -7,88 +8,93 @@ import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.chrome.ChromeOptions;
+import org.openqa.selenium.support.ui.ExpectedConditions;
+import org.openqa.selenium.support.ui.WebDriverWait;
 
 import io.github.bonigarcia.wdm.WebDriverManager;
 
-//Verify On Clicking Category A pre-assessment screen is opening or not.
-
 public class FourthTestCase {
+
 	public static void main(String[] args) throws Exception {
 		WebDriverManager.chromedriver().setup();
-		// Create ChromeOptions to disable password manager
 		ChromeOptions options = new ChromeOptions();
-
-		// Optional: Run in incognito to prevent password manager from saving
 		options.addArguments("--incognito");
-
-		// Launch browser
 		WebDriver driver = new ChromeDriver(options);
-		driver.get("https://www.skillmuni.in/Skillmuni_Prod/login");
-		System.out.println("Title of the page is =>" + driver.getTitle());
-		System.out.println("Url of the page is =>" + driver.getCurrentUrl());
-		Thread.sleep(3000);
+
+		WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(10));
+		driver.get("https://www.skillmuni.in/Skillmuni_Prod/skillmuni-login");
 		driver.manage().window().maximize();
+		Thread.sleep(2000);
 
 		// Login
-		Thread.sleep(1000);
-		WebElement userId = driver.findElement(By.xpath("//input[@id='userId']"));
-		userId.clear();
-		userId.sendKeys("healthApp");
-		WebElement password = driver.findElement(By.xpath("//input[@id='password']"));
-		password.clear();
-		password.sendKeys("healthApp");
+		driver.findElement(By.id("userId")).sendKeys("healthApp");
+		driver.findElement(By.id("password")).sendKeys("healthApp");
 		driver.findElement(By.xpath("//button[@class='login-btn']")).click();
 		Thread.sleep(3000);
 
-		// Click "See All" for Knowledge Knook
-		WebElement knowledgeSeeAll = driver.findElement(By.xpath("//a[@href='/Skillmuni_Prod/learning-zone']"));
-		knowledgeSeeAll.click();
-		System.out.println("Clicked Knowledge Knook -> See All");
+		// Zone list (Knowledge Knook, Skill Knook, etc.)
+		String[][] zones = {
+			{"//a[@href='/Skillmuni_Prod/learning-zone']", "Knowledge Knook"},
+			{"//a[@href='/Skillmuni_Prod/skill-zone']", "Skill Knook"}
+		};
 
-		// Wait for page to load fully
-		Thread.sleep(5000);
-		// Find all topic cards
-		List<WebElement> cards = driver.findElements(By.xpath("//div[contains(@class,'play-card-content')]"));
-		System.out.println("📚 Total topic cards found: " + cards.size());
-
-		// Loop through and click each card one by one
-		for (int i = 0; i < cards.size(); i++) {
-			// Re-fetch cards to avoid stale elements
-			cards = driver.findElements(By.xpath("//div[contains(@class,'play-card-content')]"));
-
-			if (i >= cards.size()) {
-				System.out.println("⚠️ No card found at index: " + i);
-				continue;
-			}
-
-			WebElement card = cards.get(i);
-			System.out.println("➡️ Clicking on card #" + (i + 1));
-			card.click();
-
-			Thread.sleep(5000); // Wait for page transition
-
-			try {
-				// Try to locate and click "Let's Go!" button
-				//If Selenium doesn't find it (i.e., throws NoSuchElementException)
-				driver.findElement(By.xpath("//button[contains(text(),\"Let's Go\")]")); 
-				System.out.println("📝 Pre-assessment screen detected. Clicking 'Let's Go!'");
-				//letsGoBtn.click();
-
-				// Optional: wait or simulate answering
-				Thread.sleep(5000);
-
-				// Go back to category screen
-				//driver.navigate().back(); // first back: assessment
-				//Thread.sleep(5000);
-				driver.navigate().back(); // second back: category list
-				Thread.sleep(5000);
-			} catch (Exception e) {
-				System.out.println("✅ No pre-assessment found or already completed. Skipping...");
-				driver.navigate().back(); // just one back
-				Thread.sleep(5000);
-			}
+		for (String[] zone : zones) {
+			verifyPreAssessmentPerCategory(driver, wait, zone[0], zone[1]);
 		}
 
 		driver.quit();
+	}
+
+	public static void verifyPreAssessmentPerCategory(WebDriver driver, WebDriverWait wait, String zoneXPath, String zoneName) throws InterruptedException {
+		WebElement seeAll = wait.until(ExpectedConditions.visibilityOfElementLocated(By.xpath(zoneXPath)));
+		seeAll.click();
+		System.out.println("\n✅ Entered " + zoneName);
+
+		Thread.sleep(4000);
+
+		List<WebElement> categories = driver.findElements(By.xpath("//div[contains(@class,'play-card-content')]"));
+		System.out.println("📚 [" + zoneName + "] Total categories found: " + categories.size());
+
+		for (int i = 0; i < categories.size(); i++) {
+			categories = driver.findElements(By.xpath("//div[contains(@class,'play-card-content')]"));
+
+			if (i >= categories.size()) {
+				System.out.println("⚠️ No category found at index: " + i);
+				continue;
+			}
+
+			WebElement category = categories.get(i);
+			String title = category.findElement(By.xpath(".//p[contains(@class,'play-card-title')]")).getText().trim();
+
+			System.out.println("➡️ Clicking on category #" + (i + 1) + ": " + title);
+			category.click();
+			Thread.sleep(4000);
+
+			try {
+				WebElement letsGo = driver.findElement(By.xpath("//button[contains(text(),\"Let's Go\")]"));
+				if (letsGo.isDisplayed()) {
+					System.out.println("📝 Pre-assessment screen detected for '" + title + "'.");
+					// Optional: letsGo.click(); // simulate start
+					Thread.sleep(2000);
+					driver.navigate().back(); // leave assessment screen
+					Thread.sleep(3000);
+				} else {
+					throw new RuntimeException("❌ 'Let's Go' button not visible for: " + title);
+				}
+			} catch (Exception e) {
+				System.out.println("✅ No pre-assessment found or already completed for '" + title + "'. Skipping...");
+			}
+
+			driver.navigate().back(); // return to category list
+			Thread.sleep(3000);
+		}
+
+		// Back to Home Page
+		
+		driver.findElement(By.xpath("//a[@href='/Skillmuni_Prod/home']")).click();
+		Thread.sleep(3000);
+		System.out.println("--------------------------------------------------------------------------------");
+		System.out.println("🔙 Returned to Home Page from " + zoneName);
+		System.out.println("--------------------------------------------------------------------------------");
 	}
 }

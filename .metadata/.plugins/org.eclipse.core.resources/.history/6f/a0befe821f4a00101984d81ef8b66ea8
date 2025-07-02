@@ -1,0 +1,148 @@
+package test0905;
+
+import java.time.Duration;
+import java.util.List;
+
+import org.openqa.selenium.By;
+import org.openqa.selenium.WebDriver;
+import org.openqa.selenium.WebElement;
+import org.openqa.selenium.chrome.ChromeDriver;
+import org.openqa.selenium.chrome.ChromeOptions;
+import org.openqa.selenium.support.ui.ExpectedConditions;
+import org.openqa.selenium.support.ui.WebDriverWait;
+
+import io.github.bonigarcia.wdm.WebDriverManager;
+
+public class SeventhTestCase {
+	 public static void main(String[] args) {
+		 WebDriverManager.chromedriver().setup();
+	        ChromeOptions options = new ChromeOptions();
+	        options.addArguments("--incognito");
+	        WebDriver driver = new ChromeDriver(options);
+	        WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(10));
+
+	        try {
+	            driver.get("https://www.skillmuni.in/Skillmuni_Prod/login");
+	            driver.manage().window().maximize();
+	            System.out.println("Title => " + driver.getTitle());
+	            System.out.println("URL => " + driver.getCurrentUrl());
+
+	            // Login
+	            wait.until(ExpectedConditions.visibilityOfElementLocated(By.id("userId"))).sendKeys("healthApp");
+	            driver.findElement(By.id("password")).sendKeys("healthApp");
+	            driver.findElement(By.xpath("//button[@class='login-btn']")).click();
+
+	            // Click on Knowledge Knook -> See All
+	            wait.until(ExpectedConditions.elementToBeClickable(By.xpath("//a[@href='/Skillmuni_Prod/learning-zone']"))).click();
+	            System.out.println("🔎 Entered Knowledge Knook");
+
+	            wait.until(ExpectedConditions.presenceOfElementLocated(By.xpath("//div[contains(@class,'play-card-content')]")));
+	            List<WebElement> cards = driver.findElements(By.xpath("//div[contains(@class,'play-card-content')]"));
+	            System.out.println("📚 Total topic cards found: " + cards.size());
+
+	            for (int i = 0; i < cards.size(); i++) {
+	                cards = driver.findElements(By.xpath("//div[contains(@class,'play-card-content')]")); // refresh
+	                WebElement card = cards.get(i);
+	                System.out.println("➡️ Clicking on card #" + (i + 1));
+	                card.click();
+
+	                try {
+	                    // Check for "Let's Go" button
+	                    WebElement letsGoBtn = wait.until(ExpectedConditions.elementToBeClickable(
+	                            By.xpath("//button[contains(text(),\"Let's Go\")]")));
+	                    System.out.println("📝 Pre-assessment detected. Clicking 'Let's Go'");
+	                    letsGoBtn.click();
+
+	                    int questionIndex = 1;
+	                    while (true) {
+	                        List<WebElement> questionCards = driver.findElements(By.xpath("//div[contains(@class,'question-card')]"));
+	                        if (questionCards.isEmpty()) break;
+
+	                        WebElement question = questionCards.get(0);
+	                        List<WebElement> options = question.findElements(By.xpath(".//label[contains(@class,'option')]"));
+
+	                        if (!options.isEmpty()) {
+	                            options.get(0).click(); // Select first option
+	                            System.out.println("✅ Answered question #" + questionIndex);
+	                        }
+
+	                        questionIndex++;
+	                        Thread.sleep(1000); // slight delay
+
+	                        // Handle 'Break Time' modal if it appears
+	                        try {
+	                            WebElement modal = wait.until(ExpectedConditions.visibilityOfElementLocated(
+	                                    By.xpath("//h2[contains(text(),'Break Time? A Head’s Up')]")));
+	                            WebElement noBtn = driver.findElement(By.xpath("//button[text()='NO']"));
+	                            noBtn.click();
+	                            System.out.println("🛑 'Break Time' modal detected. Clicked 'NO'.");
+	                            Thread.sleep(1000);
+	                        } catch (Exception ignored) {
+	                            // No modal
+	                        }
+
+	                        // Click 'Continue' if it's the last question
+	                        try {
+	                            WebElement continueBtn = driver.findElement(By.xpath("//button[contains(text(),'Continue')]"));
+	                            continueBtn.click();
+	                            System.out.println("➡️ Clicked 'Continue' after completing all questions.");
+	                            break;
+	                        } catch (Exception ignored) {
+	                            // 'Continue' not visible yet
+	                        }
+	                    }
+
+	                } catch (Exception e) {
+	                    System.out.println("✅ No pre-assessment found or already completed.");
+	                }
+
+	                // Handle "Break Time" modal after exiting
+	                try {
+	                    WebElement modal = wait.until(ExpectedConditions.visibilityOfElementLocated(
+	                            By.xpath("//h2[contains(text(),'Break Time? A Head’s Up')]")));
+	                    WebElement noBtn = driver.findElement(By.xpath("//button[text()='NO']"));
+	                    noBtn.click();
+	                    System.out.println("🛑 'Break Time' modal appeared after exit. Clicked 'NO'.");
+	                    Thread.sleep(1000);
+	                } catch (Exception e) {
+	                    System.out.println("✅ No 'Break Time' modal appeared.");
+	                }
+
+	                Thread.sleep(1500); // pause between cards
+	            }
+
+	            // After all assessments
+	            try {
+	                wait.until(ExpectedConditions.visibilityOfElementLocated(By.xpath("//div[contains(text(),'Credits') or contains(text(),'Earned')]")));
+	                WebElement creditElement = driver.findElement(By.xpath("//div[contains(text(),'Credits') or contains(text(),'Earned')]"));
+	                System.out.println("🏆 " + creditElement.getText());
+
+	                WebElement skillLevelElement = driver.findElement(By.xpath("//div[contains(@class, 'skillLevelText') or contains(text(),'You’re at the')]"));
+	                String skillText = skillLevelElement.getText();
+
+	                if (skillText.contains("Beginner")) {
+	                    System.out.println("🎯 Skill Level: Beginner");
+	                } else if (skillText.contains("Intermediate")) {
+	                    System.out.println("🎯 Skill Level: Intermediate");
+	                } else if (skillText.contains("Advanced")) {
+	                    System.out.println("🎯 Skill Level: Advanced");
+	                } else {
+	                    System.out.println("🎯 Skill Level: Not clearly identified");
+	                }
+
+	                WebElement startStageButton = driver.findElement(By.xpath("//button[contains(text(),'Start Stage')]"));
+	                startStageButton.click();
+	                System.out.println("🚀 Clicked Start Stage");
+	            } catch (Exception e) {
+	                System.out.println("⚠️ Could not fetch Credits or Skill Level: " + e.getMessage());
+	            }
+
+	        } catch (Exception ex) {
+	            System.out.println("❌ Fatal Error: " + ex.getMessage());
+	        } finally {
+	            driver.quit();
+	            System.out.println("🔚 Test Completed and Browser Closed.");
+	        }
+	        
+}
+}

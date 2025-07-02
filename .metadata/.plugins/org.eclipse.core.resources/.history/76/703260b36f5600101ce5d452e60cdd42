@@ -1,0 +1,188 @@
+package test0905;
+
+import java.time.Duration;
+import java.util.List;
+import java.util.Random;
+
+import org.openqa.selenium.By;
+import org.openqa.selenium.JavascriptExecutor;
+import org.openqa.selenium.WebDriver;
+import org.openqa.selenium.WebElement;
+import org.openqa.selenium.chrome.ChromeDriver;
+import org.openqa.selenium.chrome.ChromeOptions;
+import org.openqa.selenium.interactions.Actions;
+import org.openqa.selenium.support.ui.ExpectedConditions;
+import org.openqa.selenium.support.ui.WebDriverWait;
+
+import io.github.bonigarcia.wdm.WebDriverManager;
+
+public class NineteenTestCase {
+	public static void main(String[] args) throws Exception {
+		WebDriverManager.chromedriver().setup();
+		ChromeOptions options = new ChromeOptions();
+		options.addArguments("--incognito");
+		WebDriver driver = new ChromeDriver(options);
+		WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(10));
+		JavascriptExecutor js = (JavascriptExecutor) driver;
+		Random rand = new Random();
+
+		driver.get("https://www.skillmuni.in/Skillmuni_Prod/skillmuni-login");
+		driver.manage().window().maximize();
+		Thread.sleep(2000);
+
+		driver.findElement(By.id("userId")).sendKeys("healthApp");
+		driver.findElement(By.id("password")).sendKeys("healthApp");
+		driver.findElement(By.className("login-btn")).click();
+		Thread.sleep(3000);
+
+		driver.findElement(By.xpath("//a[@href='/Skillmuni_Prod/learning-zone']")).click();
+		System.out.println("✅ Clicked Knowledge Knook -> See All");
+
+		wait.until(ExpectedConditions.visibilityOfElementLocated(By.xpath("//div[contains(@class,'play-card-content')]")));
+		List<WebElement> categoryElements = driver.findElements(By.xpath("//div[contains(@class,'play-card-content')]"));
+
+		for (int i = 0; i < categoryElements.size(); i++) {
+			List<WebElement> categories = driver.findElements(By.xpath("//div[contains(@class,'play-card-content')]"));
+			if (i >= categories.size()) continue;
+
+			WebElement category = categories.get(i);
+			String categoryName = category.getText().trim().split("\n")[0];
+			System.out.println("\n▶️ Category " + (i + 1) + ": " + categoryName);
+
+			js.executeScript("arguments[0].scrollIntoView(true);", category);
+			Thread.sleep(1000);
+			js.executeScript("arguments[0].click();", category);
+			Thread.sleep(3000);
+
+			try {
+				By cardLocator = By.xpath("//div[contains(@class, 'cards-container')]/div[contains(@class, 'card')]");
+				wait.until(ExpectedConditions.visibilityOfElementLocated(cardLocator));
+				List<WebElement> cards = driver.findElements(cardLocator);
+
+				for (int c = 0; c < cards.size(); c++) {
+					cards = driver.findElements(cardLocator);
+					if (c >= cards.size()) continue;
+
+					WebElement card = cards.get(c);
+					String title = card.findElement(By.xpath(".//p[contains(@class,'card-title')]")).getText().trim();
+					String stage = card.findElement(By.xpath(".//span[contains(@class,'stage-text')]")).getText().trim();
+					System.out.println("-----------------------------------------------------------------------------\n📘 Sub-Category: " + title);
+					System.out.println("🧩 Stage: " + stage);
+
+					js.executeScript("arguments[0].scrollIntoView(true);", card);
+					Thread.sleep(1000);
+					js.executeScript("arguments[0].click();", card);
+					Thread.sleep(2000);
+
+					boolean moreBriefsAvailable = true;
+					int briefIndex = 0;
+
+					while (moreBriefsAvailable) {
+						List<WebElement> briefs = driver.findElements(By.xpath("//div[contains(@class,'scroll-item') and not(contains(@class,'ng-hide'))]"));
+						if (briefIndex >= briefs.size()) {
+							moreBriefsAvailable = false;
+							break;
+						}
+
+						WebElement brief = briefs.get(briefIndex);
+						js.executeScript("arguments[0].scrollIntoView(true);", brief);
+						Thread.sleep(1000);
+
+						boolean isSolved = !brief.findElements(By.xpath(".//button[contains(text(),'You did it!')] | .//div[contains(@class,'drag-text') and contains(text(),'Drag right to Dive In')]"))
+								.isEmpty();
+
+						List<WebElement> iframeVideos = brief.findElements(By.xpath(".//iframe[contains(@src,'youtube') or contains(@data-src,'youtube')]"));
+						boolean hasVideo = !iframeVideos.isEmpty();
+
+						System.out.println("Brief #" + (briefIndex + 1) + (hasVideo ? " 🎥 has Video" : " 🖼️ No Video") + " - " + (isSolved ? "✅ Solved" : "❌ Not Solved"));
+
+						if (hasVideo) {
+							try {
+								WebElement iframe = iframeVideos.get(0);
+								js.executeScript("arguments[0].scrollIntoView(true);", iframe);
+								Thread.sleep(1000);
+								new Actions(driver).moveToElement(iframe).click().perform();
+								Thread.sleep(1000);
+								driver.switchTo().frame(iframe);
+								js.executeScript("window.postMessage(JSON.stringify({event:'command', func:'mute', args:[]}), '*');");
+								js.executeScript("window.postMessage(JSON.stringify({event:'command', func:'playVideo', args:[]}), '*');");
+								Thread.sleep(2000);
+								Long state = (Long) js.executeScript("let v = document.querySelector('video'); return v ? (v.paused ? 2 : 1) : 0;");
+								System.out.println(state == 1 ? "✅ Video is playing (via JS check)!" : state == 2 ? "❌ Video is paused." : "⚠️ No video tag found.");
+								driver.switchTo().defaultContent();
+							} catch (Exception e) {
+								System.out.println("⚠️ Could not verify video state: " + e.getMessage());
+								driver.switchTo().defaultContent();
+							}
+						}
+
+						if (!isSolved) {
+							try {
+								WebElement creditsBefore = driver.findElement(By.xpath("//div[contains(@class,'score-content')]//span[contains(@class,'score-text') and contains(text(),'Credits')]"));
+								System.out.println("💳 Credits Of Subcategory before quiz: " + creditsBefore.getText().trim());
+							} catch (Exception e) {
+								System.out.println("❗ Credits before quiz not found.");
+							}
+
+							List<WebElement> quizButtons = brief.findElements(By.xpath(".//button[contains(text(),'Try the Quiz!')]"));
+							if (!quizButtons.isEmpty()) {
+								quizButtons.get(0).click();
+								wait.until(ExpectedConditions.visibilityOfElementLocated(By.xpath("//div[contains(@class,'question-text')]")));
+								List<WebElement> questions = driver.findElements(By.xpath("//div[contains(@class,'question-text')]"));
+								System.out.println("There are " + questions.size() + " questions associated with this Brief");
+
+								for (WebElement question : questions) {
+									js.executeScript("arguments[0].scrollIntoView({block: 'center'});", question);
+									Thread.sleep(300);
+									List<WebElement> op = question.findElements(By.xpath(".//following::div[contains(@class,'options-container')][2]//input[@type='radio']"));
+									if (!op.isEmpty()) {
+										op.get(0).click();
+										Thread.sleep(300);
+									} else {
+										System.out.println("❗ No options found for a question.");
+									}
+								}
+
+								WebElement showScore = driver.findElement(By.xpath("//button[@class='submit-btn' and contains(., 'Show Score')]"));
+								js.executeScript("arguments[0].scrollIntoView(true);", showScore);
+								Thread.sleep(500);
+								showScore.click();
+								Thread.sleep(2000);
+
+								try {
+									js.executeScript("window.scrollTo(0, 0);");
+									Thread.sleep(1000);
+									WebElement creditsAfter = wait.until(ExpectedConditions.visibilityOfElementLocated(By.xpath("//div[contains(@class,'score-content')]//span[contains(@class,'score-text') and contains(text(),'Credits')]")));
+									System.out.println("💰 Credits after quiz: " + creditsAfter.getText().trim());
+								} catch (Exception e) {
+									System.out.println("❗ Credits after quiz not found.");
+								}
+
+								WebElement continueBtn = wait.until(ExpectedConditions.elementToBeClickable(By.xpath("//button[contains(text(),'Continue')]")));
+								js.executeScript("arguments[0].scrollIntoView(true);", continueBtn);
+								Thread.sleep(500);
+								continueBtn.click();
+								Thread.sleep(2000);
+							}
+						}
+
+						briefIndex++;
+					}
+
+					driver.navigate().back();
+					wait.until(ExpectedConditions.visibilityOfElementLocated(cardLocator));
+					Thread.sleep(3000);
+				}
+			} catch (Exception e) {
+				System.out.println("⚠️ Category issue: " + e.getMessage());
+			}
+
+			driver.navigate().back();
+			wait.until(ExpectedConditions.visibilityOfElementLocated(By.xpath("//div[contains(@class,'play-card-content')]")));
+			Thread.sleep(2000);
+		}
+
+		System.out.println("\n✅ Test case completed.");
+		driver.quit();
+	}
+}

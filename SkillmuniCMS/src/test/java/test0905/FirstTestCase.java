@@ -32,7 +32,7 @@ public class FirstTestCase {
 
 		// Launch browser
 		WebDriver driver = new ChromeDriver(options);
-		driver.get("https://www.skillmuni.in/Skillmuni_Prod/login");
+		driver.get("https://www.skillmuni.in/Skillmuni_Prod/skillmuni-login");
 		System.out.println("Title of the page is =>" + driver.getTitle());
 		System.out.println("Url of the page is =>" + driver.getCurrentUrl());
 		Thread.sleep(3000);

@@ -1,16 +1,23 @@
 package test0905;
 
+import java.time.Duration;
 import java.util.List;
+
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.chrome.ChromeOptions;
+import org.openqa.selenium.support.ui.ExpectedConditions;
+import org.openqa.selenium.support.ui.WebDriverWait;
+
 import io.github.bonigarcia.wdm.WebDriverManager;
 
-//Verify Detection of the break warning modal when back button clicked in Pre-assesment screen
+// Verify Detection of the break warning modal when back button clicked in Pre-assessment screen
 
 public class FifthTestCase {
+	public static final String GREEN = "\u001B[32m";
+	public static final String RESET = "\u001B[0m";
 	public static void main(String[] args) throws Exception {
 
 		WebDriverManager.chromedriver().setup();
@@ -18,72 +25,90 @@ public class FifthTestCase {
 		options.addArguments("--incognito");
 
 		WebDriver driver = new ChromeDriver(options);
-		driver.get("https://www.skillmuni.in/Skillmuni_Prod/login");
-		System.out.println("Title of the page is =>" + driver.getTitle());
-		System.out.println("Url of the page is =>" + driver.getCurrentUrl());
-		Thread.sleep(3000);
+		WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(5));
+
+		driver.get("https://www.skillmuni.in/Skillmuni_Prod/skillmuni-login");
 		driver.manage().window().maximize();
+		Thread.sleep(2000);
 
 		// Login
-		Thread.sleep(1000);
 		driver.findElement(By.id("userId")).sendKeys("healthApp");
 		driver.findElement(By.id("password")).sendKeys("healthApp");
 		driver.findElement(By.xpath("//button[@class='login-btn']")).click();
 		Thread.sleep(3000);
 
-		// Click "See All" for Knowledge Knook
-		driver.findElement(By.xpath("//a[@href='/Skillmuni_Prod/learning-zone']")).click();
-		System.out.println("Clicked Knowledge Knook -> See All");
-		Thread.sleep(5000);
+		// Define zones to test
+		String[][] zones = {
+			{"//a[@href='/Skillmuni_Prod/learning-zone']", "Knowledge Knook"},
+			{"//a[@href='/Skillmuni_Prod/skill-zone']", "Skill Knook"}
+			// Add more zones here as needed
+		};
 
-		// Find all topic cards
-		List<WebElement> cards = driver.findElements(By.xpath("//div[contains(@class,'play-card-content')]"));
-		System.out.println("📚 Total topic cards found: " + cards.size());
+		for (String[] zone : zones) {
+			handleZone(driver, wait, zone[0], zone[1]);
+		}
 
-		for (int i = 0; i < cards.size(); i++) {
-			cards = driver.findElements(By.xpath("//div[contains(@class,'play-card-content')]"));
-			if (i >= cards.size()) {
-				System.out.println("⚠️ No card found at index: " + i);
-				continue;
-			}
+		driver.quit();
+	}
 
-			WebElement card = cards.get(i);
-			System.out.println("➡️ Clicking on card #" + (i + 1));
-			card.click();
-			Thread.sleep(5000);
+	public static void handleZone(WebDriver driver, WebDriverWait wait, String zoneXPath, String zoneName) throws InterruptedException {
+		WebElement zoneLink = wait.until(ExpectedConditions.elementToBeClickable(By.xpath(zoneXPath)));
+		zoneLink.click();
+		System.out.println("\n✅ Entered Zone: " + zoneName);
+		Thread.sleep(4000);
+
+		List<WebElement> categories = driver.findElements(By.xpath("//div[contains(@class,'play-card-content')]"));
+		System.out.println("📚 [" + zoneName + "] Total categories: " + categories.size());
+
+		for (int i = 0; i < categories.size(); i++) {
+			categories = driver.findElements(By.xpath("//div[contains(@class,'play-card-content')]"));
+			WebElement category = categories.get(i);
+			String title = category.findElement(By.xpath(".//p[contains(@class,'play-card-title')]")).getText().trim();
+
+			System.out.println("➡️ Clicking category #" + (i + 1) + ": " + title);
+			category.click();
+			Thread.sleep(3000);
 
 			try {
-				WebElement letsGoBtn = driver.findElement(By.xpath("//button[contains(text(),\"Let's Go\")]"));
-				System.out.println("📝 Pre-assessment screen detected. Clicking 'Let's Go!'");
+				WebElement letsGoBtn = wait.until(ExpectedConditions.visibilityOfElementLocated(
+						By.xpath("//button[contains(text(),\"Let's Go\")]")));
+				System.out.println(GREEN + "📝 Pre-assessment detected. Clicking 'Let's Go'" + RESET);
 				letsGoBtn.click();
 				Thread.sleep(3000);
-				
-				WebElement BackBtn=driver.findElement(By.xpath("//img[@alt='Back Icon']"));
-				BackBtn.click();
+
+				WebElement backBtn = wait.until(ExpectedConditions.elementToBeClickable(
+						By.xpath("//img[@alt='Back Icon']")));
+				backBtn.click();
 				Thread.sleep(1000);
 
-				// Detect the break warning modal 
 				try {
-					// Detect the break warning modal
-					//If Selenium doesn't find it (i.e., throws NoSuchElementException)
-					driver.findElement(By.xpath("//h2[contains(text(),'Break Time? A Head’s Up')]"));
+					//WebElement modal = wait.until(ExpectedConditions.visibilityOfElementLocated(
+					//By.xpath("//h2[contains(text(),'Break Time? A Head’s Up')]")));
+					wait.until(ExpectedConditions.visibilityOfElementLocated(
+							By.xpath("//h2[contains(text(),'Break Time? A Head’s Up')]")));
 					WebElement yesBtn = driver.findElement(By.xpath("//button[text()='YES']"));
-					System.out.println("⚠️ Break warning detected. Clicking 'YES' to exit.");
+					System.out.println(GREEN + "⚠️ Break modal detected for '" + title + "'. Clicking YES." + RESET);
 					yesBtn.click();
 					Thread.sleep(3000);
 				} catch (Exception modalNotFound) {
-					System.out.println("✅ No break warning dialog.");
+					System.out.println("❌ Break modal NOT detected for '" + title + "'.");
 					driver.navigate().back();
 					Thread.sleep(3000);
 				}
 
-			} catch (Exception noAssessment) {
-				System.out.println("✅ No pre-assessment found or already completed. Going back...");
+			} catch (Exception e) {
+				System.out.println("✅ No pre-assessment or already completed for '" + title + "'.");
 				driver.navigate().back();
 				Thread.sleep(3000);
 			}
 		}
 
-		driver.quit();
+		// Back to Home Page
+				
+				driver.findElement(By.xpath("//a[@href='/Skillmuni_Prod/home']")).click();
+				Thread.sleep(3000);
+				System.out.println("--------------------------------------------------------------------------------");
+				System.out.println("🔙 Returned to Home Page from " + zoneName);
+				System.out.println("--------------------------------------------------------------------------------");
 	}
 }

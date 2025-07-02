@@ -1,9 +1,8 @@
 package test0905;
 
 import java.time.Duration;
-import java.util.HashMap;
+
 import java.util.List;
-import java.util.Map;
 
 import org.openqa.selenium.By;
 import org.openqa.selenium.ElementClickInterceptedException;
@@ -40,7 +39,7 @@ public class ThirteenTestCase {
         };
 
         try {
-            driver.get("https://www.skillmuni.in/Skillmuni_Prod/login");
+            driver.get("https://www.skillmuni.in/Skillmuni_Prod/skillmuni-login");
             driver.manage().window().maximize();
             System.out.println("Title => " + driver.getTitle());
             System.out.println("URL => " + driver.getCurrentUrl());

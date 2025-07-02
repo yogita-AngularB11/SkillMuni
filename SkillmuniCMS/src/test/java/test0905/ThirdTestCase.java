@@ -1,5 +1,6 @@
 package test0905;
 
+import java.time.Duration;
 import java.util.List;
 
 import org.openqa.selenium.By;
@@ -7,78 +8,84 @@ import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.chrome.ChromeOptions;
+import org.openqa.selenium.support.ui.ExpectedConditions;
+import org.openqa.selenium.support.ui.WebDriverWait;
 
 import io.github.bonigarcia.wdm.WebDriverManager;
 
 public class ThirdTestCase {
 
-	public static void main(String[] args) throws Exception {
+    public static void main(String[] args) throws Exception {
 
-		// Verify each Category Tile in KnowledgeKnook is opening
+        WebDriverManager.chromedriver().setup();
+        ChromeOptions options = new ChromeOptions();
+        options.addArguments("--incognito");
+        WebDriver driver = new ChromeDriver(options);
 
-		WebDriverManager.chromedriver().setup();
-		// Create ChromeOptions to disable password manager
-		ChromeOptions options = new ChromeOptions();
+        WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(10));
+        driver.get("https://www.skillmuni.in/Skillmuni_Prod/skillmuni-login");
+        driver.manage().window().maximize();
+        Thread.sleep(2000);
 
-		// Optional: Run in incognito to prevent password manager from saving
-		options.addArguments("--incognito");
+        // Login
+        driver.findElement(By.id("userId")).sendKeys("healthApp");
+        driver.findElement(By.id("password")).sendKeys("healthApp");
+        driver.findElement(By.xpath("//button[@class='login-btn']")).click();
+        Thread.sleep(3000);
 
-		// Launch browser
-		WebDriver driver = new ChromeDriver(options);
-		driver.get("https://www.skillmuni.in/Skillmuni_Prod/login");
-		//System.out.println("Title of the page is =>" + driver.getTitle());
-		//System.out.println("Url of the page is =>" + driver.getCurrentUrl());
-		Thread.sleep(3000);
-		driver.manage().window().maximize();
+        // Zones to test
+        String[][] zones = {
+            {"//a[@href='/Skillmuni_Prod/learning-zone']", "Knowledge Knook"},
+            {"//a[@href='/Skillmuni_Prod/skill-zone']", "Skill Knook"},
+//            {"//a[@href='/Skillmuni_Prod/practice-zone']", "Practice Knook"}
+        };
 
-		// Login
-		Thread.sleep(1000);
-		WebElement userId = driver.findElement(By.xpath("//input[@id='userId']"));
-		userId.clear();
-		userId.sendKeys("healthApp");
-		WebElement password = driver.findElement(By.xpath("//input[@id='password']"));
-		password.clear();
-		password.sendKeys("healthApp");
-		driver.findElement(By.xpath("//button[@class='login-btn']")).click();
-		Thread.sleep(3000);
+        for (String[] zone : zones) {
+            clickEachCategoryInZone(driver, wait, zone[0], zone[1]);
+        }
 
-		// Click "See All" for Knowledge Knook
-		WebElement knowledgeSeeAll = driver.findElement(By.xpath("//a[@href='/Skillmuni_Prod/learning-zone']"));
-		knowledgeSeeAll.click();
-		System.out.println("Clicked Knowledge Knook -> See All");
+        driver.quit();
+    }
 
-		// Wait for page to load fully
-		Thread.sleep(5000);
-		// Find all topic cards
-		List<WebElement> cards = driver.findElements(By.xpath("//div[contains(@class,'play-card-content')]"));
-		System.out.println("📚 Total topic cards found: " + cards.size());
+    public static void clickEachCategoryInZone(WebDriver driver, WebDriverWait wait, String zoneXPath, String zoneName) throws InterruptedException {
+        // Go to the zone
+        WebElement seeAllLink = wait.until(ExpectedConditions.visibilityOfElementLocated(By.xpath(zoneXPath)));
+        seeAllLink.click();
+        System.out.println("\n✅ Entered " + zoneName);
+        Thread.sleep(4000);
 
-		// Loop through and click each card one by one
-		for (int i = 0; i < cards.size(); i++) {
-			cards = driver.findElements(By.xpath("//div[contains(@class,'play-card-content')]")); // Re-fetch to avoid stale
-																							// element
-			WebElement card = cards.get(i);
+        List<WebElement> categories = driver.findElements(By.xpath("//div[contains(@class,'play-card-content')]"));
+        System.out.println("📚 [" + zoneName + "] Total categories found: " + categories.size());
 
-			
-			// Print card number
-			System.out.println("➡️ Clicking on card #" + (i + 1));
+        for (int i = 0; i < categories.size(); i++) {
+            categories = driver.findElements(By.xpath("//div[contains(@class,'play-card-content')]"));
 
-			// Click the card
-			card.click();
+            WebElement category = categories.get(i);
+            String title = category.findElement(By.xpath(".//p[contains(@class,'play-card-title')]")).getText().trim();
 
-			// Optional: Wait to observe the page
-			Thread.sleep(3000);
+            System.out.println("➡️ Clicking on category #" + (i + 1) + ": " + title);
 
-			// Navigate back to home
-			driver.navigate().back();
+            String urlBeforeClick = driver.getCurrentUrl();
 
-			// Wait to ensure page reloads
-			Thread.sleep(3000);
-		}
+            category.click();
+            Thread.sleep(3000);
 
-		System.out.println("✅ Finished clicking all cards.");
+            String urlAfterClick = driver.getCurrentUrl();
 
-		driver.quit();
-	}
+            // Validate that card actually opened a new page
+            if (urlBeforeClick.equals(urlAfterClick)) {
+                throw new RuntimeException("❌ Category '" + title + "' did not open a new page.");
+            } else {
+                System.out.println("✅ Opened category page for: " + title);
+            }
 
+            driver.navigate().back();
+            Thread.sleep(3000);
+        }
+
+        // Return to dashboard
+        driver.findElement(By.xpath("//a[@href='/Skillmuni_Prod/home']")).click();
+        Thread.sleep(3000);
+        System.out.println("🔙 Returned to Home Page from " + zoneName);
+    }
 }
