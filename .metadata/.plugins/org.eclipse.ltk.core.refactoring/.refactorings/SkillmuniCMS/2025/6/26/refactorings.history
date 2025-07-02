@@ -1,4 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<session version="1.0">
-<refactoring comment="Copy element &apos;SeventeenTestCase.java&apos; to &apos;test0905.SeventeenTestCase.java&apos;&#x0D;&#x0A;- Original project: &apos;SkillmuniCMS&apos;&#x0D;&#x0A;- Destination element: &apos;test0905.SeventeenTestCase.java&apos;&#x0D;&#x0A;- Original element: &apos;test0905.SeventeenTestCase.java&apos;" description="Copy compilation unit" destination="/src\/test\/java=/optional=/true=/=/maven.pomderived=/true=/=/test=/true=/&lt;test0905{SeventeenTestCase.java" element1="/src\/test\/java=/optional=/true=/=/maven.pomderived=/true=/=/test=/true=/&lt;test0905{SeventeenTestCase.java" files="0" flags="589830" folders="0" id="org.eclipse.jdt.ui.copy" policy="org.eclipse.jdt.ui.copyResources" stamp="1750763135188" units="1" version="1.0"/>
-</session>
