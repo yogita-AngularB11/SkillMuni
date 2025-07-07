@@ -36,7 +36,7 @@ public class FirstTestCase {
 		System.out.println("Title of the page is =>" + driver.getTitle());
 		System.out.println("Url of the page is =>" + driver.getCurrentUrl());
 		Thread.sleep(3000);
-		driver.manage().window().maximize();
+		driver.manage().timeouts().pageLoadTimeout(null);
 
 		// Login
 		Thread.sleep(1000);

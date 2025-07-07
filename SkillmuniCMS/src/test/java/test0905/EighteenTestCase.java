@@ -31,8 +31,8 @@ public class EighteenTestCase {
 		driver.manage().window().maximize();
 		Thread.sleep(2000);
 
-		driver.findElement(By.id("userId")).sendKeys("healthApp");
-		driver.findElement(By.id("password")).sendKeys("healthApp");
+		driver.findElement(By.id("userId")).sendKeys("Ayaan_HC");
+		driver.findElement(By.id("password")).sendKeys("Ayaan_HC");
 		driver.findElement(By.className("login-btn")).click();
 		Thread.sleep(3000);
 

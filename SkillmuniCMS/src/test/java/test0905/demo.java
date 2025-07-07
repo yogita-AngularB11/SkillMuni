@@ -30,8 +30,8 @@ public class demo {
 		driver.manage().window().maximize();
 		Thread.sleep(2000);
 
-		driver.findElement(By.id("userId")).sendKeys("healthApp");
-		driver.findElement(By.id("password")).sendKeys("healthApp");
+		driver.findElement(By.id("userId")).sendKeys("appuser0207");
+		driver.findElement(By.id("password")).sendKeys("appuser0207");
 		driver.findElement(By.className("login-btn")).click();
 		Thread.sleep(3000);
 

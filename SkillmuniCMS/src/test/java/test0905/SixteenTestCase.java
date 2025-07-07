@@ -24,7 +24,7 @@ public class SixteenTestCase {
 		WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(10));
 		JavascriptExecutor js = (JavascriptExecutor) driver;
 
-		driver.get("https://www.skillmuni.in/Skillmuni_Prod/login");
+		driver.get("https://www.skillmuni.in/Skillmuni_Prod/skillmuni-login");
 		driver.manage().window().maximize();
 		Thread.sleep(2000);
 

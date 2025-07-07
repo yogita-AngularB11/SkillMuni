@@ -13,7 +13,8 @@ import org.openqa.selenium.support.ui.WebDriverWait;
 
 import io.github.bonigarcia.wdm.WebDriverManager;
 
-// Test case to check YouTube links under Knowledge Knook categories
+// Test case to check Categories ,Sub-category And Stages
+
 public class FourteenTestCase {
     public static void main(String[] args) throws Exception {
 
@@ -25,18 +26,19 @@ public class FourteenTestCase {
         WebDriver driver = new ChromeDriver(options);
         WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(10));
 
-        driver.get("https://www.skillmuni.in/Skillmuni_Prod/login");
+        driver.get("https://www.skillmuni.in/Skillmuni_Prod/skillmuni-login");
         driver.manage().window().maximize();
+        
         Thread.sleep(2000);
 
         // Login
         WebElement userId = driver.findElement(By.id("userId"));
         userId.clear();
-        userId.sendKeys("healthApp");
+        userId.sendKeys("Ayaan_HC");
 
         WebElement password = driver.findElement(By.id("password"));
         password.clear();
-        password.sendKeys("healthApp");
+        password.sendKeys("Ayaan_HC");
 
         driver.findElement(By.className("login-btn")).click();
         Thread.sleep(3000);

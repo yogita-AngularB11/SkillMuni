@@ -28,8 +28,8 @@ public class FifteenthTestCase {
         Thread.sleep(2000);
 
         // Login
-        driver.findElement(By.id("userId")).sendKeys("healthApp");
-        driver.findElement(By.id("password")).sendKeys("healthApp");
+        driver.findElement(By.id("userId")).sendKeys("Ayaan_HC");
+        driver.findElement(By.id("password")).sendKeys("Ayaan_HC");
         driver.findElement(By.className("login-btn")).click();
         Thread.sleep(3000);
 

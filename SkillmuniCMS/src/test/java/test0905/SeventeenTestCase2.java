@@ -107,7 +107,7 @@ public class SeventeenTestCase2 {
 							boolean hasImageYoutube = brief.findElements(
 							    By.xpath(".//img[contains(@src,'youtube.com')]")
 							).stream().anyMatch(img -> {
-							    String src = img.getAttribute("src");
+							    String src = img.getDomAttribute("src");
 							    return src != null && src.contains("youtube.com");
 							});
 
@@ -122,58 +122,63 @@ public class SeventeenTestCase2 {
 								+ (isSolved ? "✅ Brief Assessment Solved" : "⏳ Brief Assessment Not Solved"));
 						System.out.println();
 
-						if (hasVideo) {
-							try {
-								WebElement iframe = brief
-										.findElement(By.xpath(".//iframe[contains(@src,'youtube.com/embed/')]"));
-								js.executeScript("arguments[0].scrollIntoView(true);", iframe);
-								Thread.sleep(1000);
+						if (hasVideo) {WebElement iframe = brief.findElement(By.xpath(".//iframe[contains(@src,'youtube.com/embed/')]"));
+						js.executeScript("arguments[0].scrollIntoView(true);", iframe);
+						Thread.sleep(1000);
 
-								// Simulate user gesture
-								new Actions(driver).moveToElement(iframe).click().perform();
-								Thread.sleep(1000);
+						// Simulate user gesture
+						new Actions(driver).moveToElement(iframe).click().perform();
+						Thread.sleep(1000);
 
-								driver.switchTo().frame(iframe);
+						driver.switchTo().frame(iframe);
 
-								// Try clicking Play
-								js.executeScript("var iframeWin = window; iframeWin.postMessage(JSON.stringify({"
-										+ "event: 'command', func: 'mute', args: []}), '*');"
-										+ "iframeWin.postMessage(JSON.stringify({"
-										+ "event: 'command', func: 'playVideo', args: []}), '*');");
-								Thread.sleep(4000);
+						// ✅ Check for YouTube error messages
+						List<WebElement> errorMessages = driver.findElements(By.xpath(
+							"//*[contains(text(),'Video unavailable') or " +
+							"contains(text(),'Playback on other websites has been disabled') or " +
+							"contains(text(),'This video is private') or " +
+							"contains(text(),'not available in your country')]"));
 
-								// JS to check video state: paused = false means it's playing
-								Long state = (Long) js.executeScript(
-										"let v = document.querySelector('video'); return v ? (v.paused ? 2 : 1) : 0;");
-								if (state == 1) {
-									System.out.println("✅ Video is playing (via JS check)!");
-
-									driver.switchTo().defaultContent(); // 👈 Step out of the iframe
-
-									// ✅ Pause the video from parent window using YouTube's API
-									js.executeScript(
-											"var iframe = arguments[0];"
-													+ "iframe.contentWindow.postMessage(JSON.stringify({"
-													+ "event: 'command', func: 'pauseVideo', args: []}), '*');",
-											iframe);
-
-									Thread.sleep(500); // Give it a moment to take effect
-								} else if (state == 2) {
-									System.out.println("\u001B[31m ❌ Video is paused.\u001B[0m");
-								} else {
-									System.out.println("⚠️ No video tag found.");
-								}
-
-								driver.switchTo().defaultContent();
-							} catch (Exception e) {
-								System.out.println("⚠️ Could not verify video state: " + e.getMessage());
-								try {
-									driver.switchTo().defaultContent();
-								} catch (Exception ex) {
-									System.out.println("⚠️ Error returning from iframe: " + ex.getMessage());
-								}
+						if (!errorMessages.isEmpty()) {
+							String errorText = errorMessages.get(0).getText().trim();
+							if (errorText.isEmpty()) {
+								System.out.println("❌ YouTube Error Detected: (element found, but no visible error text)");
+							} else {
+								System.out.println("❌ YouTube Error Detected: " + errorText);
 							}
+							driver.switchTo().defaultContent();
+							continue;
 						}
+
+						// 🎬 Play video via JS API
+						js.executeScript("var iframeWin = window; iframeWin.postMessage(JSON.stringify({"
+							+ "event: 'command', func: 'mute', args: []}), '*');"
+							+ "iframeWin.postMessage(JSON.stringify({"
+							+ "event: 'command', func: 'playVideo', args: []}), '*');");
+						Thread.sleep(2000);
+
+						// 🎯 Check if video is playing
+						Long state = (Long) js.executeScript(
+							"let v = document.querySelector('video'); return v ? (v.paused ? 2 : 1) : 0;");
+						if (state == 1) {
+							System.out.println("\\u001B[32m ✅ Video is playing (via JS check)!\\u001B[0m");
+							driver.switchTo().defaultContent();
+
+							// Pause the video using YouTube API
+							js.executeScript(
+								"var iframe = arguments[0];"
+								+ "iframe.contentWindow.postMessage(JSON.stringify({"
+								+ "event: 'command', func: 'pauseVideo', args: []}), '*');", iframe);
+
+							Thread.sleep(500);
+						} else if (state == 2) {
+							System.out.println("\u001B[31m ❌ Video is paused.\u001B[0m");
+						} else {
+							System.out.println("⚠️ No video tag found.");
+						}
+
+						driver.switchTo().defaultContent();
+}
 						// ✅ NOW switch back to default content
 						driver.switchTo().defaultContent();
 						Thread.sleep(1000);
